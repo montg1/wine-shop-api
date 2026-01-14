@@ -47,6 +47,13 @@ go run cmd/server/main.go
 ```
 The server will start on `http://localhost:8080`.
 
+### 5. Run Tests (Optional)
+A shell script is included to test the full flow (Auth -> Product -> Cart -> Order).
+```bash
+chmod +x test_api.sh
+./test_api.sh
+```
+
 ## 📚 API Endpoints
 
 ### Public
