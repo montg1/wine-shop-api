@@ -8,6 +8,7 @@
           🛒 <span v-if="cartStore.totalItems" class="badge">{{ cartStore.totalItems }}</span>
         </router-link>
         <router-link v-if="authStore.isLoggedIn" to="/orders">Orders</router-link>
+        <router-link v-if="authStore.isLoggedIn" to="/admin" class="admin-link">⚙️ Admin</router-link>
         <template v-if="authStore.isLoggedIn">
           <button @click="handleLogout" class="btn-link">Logout</button>
         </template>

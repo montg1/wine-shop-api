@@ -37,6 +37,34 @@ const routes = [
         name: 'Orders',
         component: () => import('../views/OrdersView.vue'),
         meta: { requiresAuth: true }
+    },
+    // Admin Routes
+    {
+        path: '/admin',
+        component: () => import('../views/admin/AdminLayout.vue'),
+        meta: { requiresAuth: true },
+        children: [
+            {
+                path: '',
+                name: 'AdminDashboard',
+                component: () => import('../views/admin/AdminDashboard.vue')
+            },
+            {
+                path: 'products',
+                name: 'AdminProducts',
+                component: () => import('../views/admin/AdminProducts.vue')
+            },
+            {
+                path: 'products/new',
+                name: 'AdminProductNew',
+                component: () => import('../views/admin/ProductForm.vue')
+            },
+            {
+                path: 'products/:id/edit',
+                name: 'AdminProductEdit',
+                component: () => import('../views/admin/ProductForm.vue')
+            }
+        ]
     }
 ]
 
