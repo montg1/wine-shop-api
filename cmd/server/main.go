@@ -11,6 +11,7 @@ import (
 	"wine-shop-api/pkg/config"
 	"wine-shop-api/pkg/utils"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	swaggerFiles "github.com/swaggo/files"
@@ -62,6 +63,14 @@ func main() {
 
 	// Initialize Gin engine
 	r := gin.Default()
+
+	// CORS Middleware
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		AllowCredentials: true,
+	}))
 
 	// Global Middleware
 	r.Use(gin.Recovery())
