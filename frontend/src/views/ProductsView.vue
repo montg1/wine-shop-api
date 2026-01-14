@@ -1,6 +1,9 @@
 <template>
   <div class="products-page">
-    <h1>Our Wines</h1>
+    <div class="page-header">
+      <h1>Our Collection</h1>
+      <p>Carefully selected wines from exceptional vineyards</p>
+    </div>
     
     <div v-if="productStore.loading" class="loading">Loading wines...</div>
     
@@ -11,13 +14,15 @@
         class="product-card"
         @click="$router.push(`/products/${product.ID}`)"
       >
-        <div class="product-image">🍷</div>
+        <div class="product-image">
+          <img :src="wineBottleImg" :alt="product.name" />
+        </div>
         <div class="product-info">
+          <span class="category">{{ product.category }}</span>
           <h3>{{ product.name }}</h3>
-          <p class="category">{{ product.category }}</p>
           <p class="price">${{ product.price.toFixed(2) }}</p>
           <button 
-            class="btn btn-primary" 
+            class="btn btn-outline" 
             @click.stop="addToCart(product.ID)"
           >
             Add to Cart
@@ -27,7 +32,7 @@
     </div>
     
     <div v-if="productStore.products.length === 0 && !productStore.loading" class="empty">
-      No wines available at the moment.
+      <p>No wines available at the moment.</p>
     </div>
   </div>
 </template>
@@ -38,6 +43,7 @@ import { useProductStore } from '../stores/products'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import wineBottleImg from '../assets/images/wine-bottle.png'
 
 const productStore = useProductStore()
 const cartStore = useCartStore()
@@ -60,71 +66,90 @@ const addToCart = async (productId) => {
 
 <style scoped>
 .products-page {
-  padding: 40px 20px;
+  padding: 60px 20px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.products-page h1 {
+.page-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 60px;
+}
+
+.page-header h1 {
+  font-size: 2.8rem;
   color: var(--primary);
+  margin-bottom: 10px;
+}
+
+.page-header p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
 }
 
 .products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 30px;
+  gap: 40px;
 }
 
 .product-card {
   background: var(--card-bg);
-  border-radius: 16px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid var(--border);
 }
 
 .product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(139, 69, 102, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .product-image {
-  height: 180px;
-  background: linear-gradient(135deg, #3d2a4a 0%, #5a3a6a 100%);
+  height: 280px;
+  background: var(--bg-warm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 5rem;
+  padding: 30px;
+}
+
+.product-image img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .product-info {
-  padding: 20px;
-}
-
-.product-info h3 {
-  margin-bottom: 5px;
-  color: #fff;
+  padding: 25px;
+  text-align: center;
 }
 
 .category {
-  color: #999;
-  font-size: 0.9rem;
-  margin-bottom: 10px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+}
+
+.product-info h3 {
+  font-size: 1.4rem;
+  color: var(--text);
+  margin: 8px 0;
 }
 
 .price {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.3rem;
   color: var(--primary);
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .loading, .empty {
   text-align: center;
   padding: 60px;
-  color: #888;
-  font-size: 1.2rem;
+  color: var(--text-muted);
+  font-size: 1.1rem;
 }
 </style>
