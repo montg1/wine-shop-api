@@ -55,9 +55,22 @@ The server will start on `http://localhost:8080`.
   - Body: `{"email": "user@example.com", "password": "password"}`
 - `POST /api/login` - Login and receive JWT
   - Body: `{"email": "user@example.com", "password": "password"}`
+- `GET /api/products` - List all wines
+- `GET /api/products/:id` - Get wine details
 
 ### Protected (Requires Bearer Token)
+**Admin**
 - `GET /api/admin/profile` - Verify token validity
+- `POST /api/admin/products` - Create new wine
+- `PUT /api/admin/products/:id` - Update wine details
+- `DELETE /api/admin/products/:id` - Delete wine
+
+**User (Shopping)**
+- `GET /api/cart` - View current cart
+- `POST /api/cart` - Add item to cart
+  - Body: `{"product_id": 1, "quantity": 2}`
+- `POST /api/orders` - Checkout
+- `GET /api/orders` - View order history
 
 ## 🗂️ Project Structure
 ```text
