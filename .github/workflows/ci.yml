@@ -32,6 +32,57 @@ jobs:
       - name: Run Tests
         run: go test -v ./...
 
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wine_shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
+      - name: Build Application
+        run: go build -o main cmd/server/main.go
+
+      - name: Start Server
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: wine_shop
+          API_SECRET: supersecretkey
+          TOKEN_HOUR_LIFESPAN: 24
+        run: |
+          nohup ./main > server.log 2>&1 &
+          echo "Waiting for server to start..."
+          sleep 5
+          cat server.log
+
+      - name: Run API Test Script
+        run: |
+          chmod +x test_api.sh
+          ./test_api.sh
+
   docker-build:
     name: Build Docker Image
     runs-on: ubuntu-latest
