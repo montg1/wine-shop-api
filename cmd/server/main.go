@@ -50,6 +50,15 @@ func main() {
 	productHandler := &handler.ProductHandler{
 		Service: &service.ProductService{},
 	}
+	cartService := &service.CartService{}
+	cartHandler := &handler.CartHandler{
+		Service: cartService,
+	}
+	orderHandler := &handler.OrderHandler{
+		Service: &service.OrderService{
+			CartService: cartService,
+		},
+	}
 
 	// Public Routes
 	public := r.Group("/api")
@@ -69,18 +78,31 @@ func main() {
 	}
 
 	// Protected Routes (Admin)
-	protected := r.Group("/api/admin")
-	protected.Use(middleware.JwtAuthMiddleware())
+	protectedAdmin := r.Group("/api/admin")
+	protectedAdmin.Use(middleware.JwtAuthMiddleware())
 	{
-		protected.GET("/profile", func(c *gin.Context) {
+		protectedAdmin.GET("/profile", func(c *gin.Context) {
 			userID, _ := utils.ExtractTokenID(c)
 			c.JSON(http.StatusOK, gin.H{"message": "Admin access granted", "user_id": userID})
 		})
 
 		// Product Routes (Admin)
-		protected.POST("/products", productHandler.CreateProduct)
-		protected.PUT("/products/:id", productHandler.UpdateProduct)
-		protected.DELETE("/products/:id", productHandler.DeleteProduct)
+		protectedAdmin.POST("/products", productHandler.CreateProduct)
+		protectedAdmin.PUT("/products/:id", productHandler.UpdateProduct)
+		protectedAdmin.DELETE("/products/:id", productHandler.DeleteProduct)
+	}
+
+	// Protected Routes (User)
+	protectedUser := r.Group("/api")
+	protectedUser.Use(middleware.JwtAuthMiddleware())
+	{
+		// Cart Routes
+		protectedUser.POST("/cart", cartHandler.AddToCart)
+		protectedUser.GET("/cart", cartHandler.GetCart)
+
+		// Order Routes
+		protectedUser.POST("/orders", orderHandler.CreateOrder)
+		protectedUser.GET("/orders", orderHandler.GetOrders)
 	}
 
 	// Start server
