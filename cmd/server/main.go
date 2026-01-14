@@ -47,8 +47,11 @@ func main() {
 	authHandler := &handler.AuthHandler{
 		Service: &service.UserService{},
 	}
+	productHandler := &handler.ProductHandler{
+		Service: &service.ProductService{},
+	}
 
-	// Routes
+	// Public Routes
 	public := r.Group("/api")
 	{
 		public.POST("/register", authHandler.Register)
@@ -59,8 +62,13 @@ func main() {
 				"message": "Wine Shop API is running",
 			})
 		})
+
+		// Product Routes (Public)
+		public.GET("/products", productHandler.GetAllProducts)
+		public.GET("/products/:id", productHandler.GetProduct)
 	}
 
+	// Protected Routes (Admin)
 	protected := r.Group("/api/admin")
 	protected.Use(middleware.JwtAuthMiddleware())
 	{
@@ -68,6 +76,11 @@ func main() {
 			userID, _ := utils.ExtractTokenID(c)
 			c.JSON(http.StatusOK, gin.H{"message": "Admin access granted", "user_id": userID})
 		})
+
+		// Product Routes (Admin)
+		protected.POST("/products", productHandler.CreateProduct)
+		protected.PUT("/products/:id", productHandler.UpdateProduct)
+		protected.DELETE("/products/:id", productHandler.DeleteProduct)
 	}
 
 	// Start server
