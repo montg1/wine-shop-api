@@ -23,9 +23,18 @@ type LoginInput struct {
 	Password string `json:"password" binding:"required"`
 }
 
+// Register godoc
+// @Summary      Register a new user
+// @Description  Create a new user account with email and password
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        input  body      RegisterInput  true  "Register Input"
+// @Success      201    {object}  map[string]interface{}
+// @Failure      400    {object}  map[string]interface{}
+// @Router       /register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input RegisterInput
-
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -45,9 +54,18 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "registration success", "user": user})
 }
 
+// Login godoc
+// @Summary      Login user
+// @Description  Authenticate user and return JWT token
+// @Tags         Auth
+// @Accept       json
+// @Produce      json
+// @Param        input  body      LoginInput  true  "Login Input"
+// @Success      200    {object}  map[string]interface{}
+// @Failure      400    {object}  map[string]interface{}
+// @Router       /login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var input LoginInput
-
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -55,7 +73,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	token, err := h.Service.Login(input.Email, input.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Login failed", "details": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
 		return
 	}
 

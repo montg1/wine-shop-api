@@ -18,6 +18,18 @@ type AddToCartInput struct {
 	Quantity  int  `json:"quantity" binding:"required,min=1"`
 }
 
+// AddToCart godoc
+// @Summary      Add item to cart
+// @Description  Add a wine to the user's shopping cart
+// @Tags         Cart
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        input  body      AddToCartInput  true  "Cart Item"
+// @Success      200    {object}  map[string]interface{}
+// @Failure      400    {object}  map[string]interface{}
+// @Failure      401    {object}  map[string]interface{}
+// @Router       /cart [post]
 func (h *CartHandler) AddToCart(c *gin.Context) {
 	userID, err := utils.ExtractTokenID(c)
 	if err != nil {
@@ -39,6 +51,17 @@ func (h *CartHandler) AddToCart(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Item added to cart"})
 }
 
+// GetCart godoc
+// @Summary      Get shopping cart
+// @Description  Retrieve the current user's shopping cart items
+// @Tags         Cart
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200    {object}  map[string]interface{}
+// @Failure      401    {object}  map[string]interface{}
+// @Failure      500    {object}  map[string]interface{}
+// @Router       /cart [get]
 func (h *CartHandler) GetCart(c *gin.Context) {
 	userID, err := utils.ExtractTokenID(c)
 	if err != nil {
