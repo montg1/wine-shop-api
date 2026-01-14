@@ -2,6 +2,8 @@
 
 A full-stack e-commerce application for an online wine shop.
 
+![Wine Shop Homepage](docs/images/homepage.png)
+
 ## 🚀 Tech Stack
 
 | Layer | Technology |
@@ -39,10 +41,13 @@ docker compose up -d --build
 - ✅ Checkout & place orders
 - ✅ View order history
 
-### Admin Features (API)
+### Admin Features
+- ✅ Dashboard with stats
 - ✅ Create new wines
 - ✅ Update wine details
 - ✅ Delete wines from catalog
+
+![Admin Panel](docs/images/admin_panel.png)
 
 ## 📚 API Endpoints
 
