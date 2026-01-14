@@ -1,5 +1,22 @@
 version: '3.8'
 services:
+  app:
+    build: .
+    container_name: wine_shop_api
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=wine_shop
+      - API_SECRET=mysecretkey
+      - TOKEN_HOUR_LIFESPAN=24
+
   db:
     image: postgres:15-alpine
     container_name: wine_shop_db
