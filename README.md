@@ -1,94 +1,109 @@
-# Wine Shop API 🍷
+# Wine Shop 🍷
 
-A RESTful backend API for a Wine Shop, built with Go, Gin, GORM, and PostgreSQL.
+A full-stack e-commerce application for an online wine shop.
 
 ## 🚀 Tech Stack
-- **Language**: Go (Golang)
-- **Framework**: Gin Web Framework
-- **Database**: PostgreSQL
-- **ORM**: GORM
-- **Authentication**: JWT & BCrypt
-- **Containerization**: Docker
 
-## 🛠️ Setup & Installation
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Vue 3, Vite, Pinia, Vue Router |
+| **Backend** | Go, Gin, GORM |
+| **Database** | PostgreSQL |
+| **Auth** | JWT, BCrypt |
+| **Docs** | Swagger/OpenAPI |
+| **DevOps** | Docker, GitHub Actions |
 
-### Prerequisites
-- Go 1.20+
-- Docker & Docker Compose
+## 🛠️ Quick Start
 
-### 1. Clone the repository
 ```bash
+# Clone the repo
 git clone https://github.com/montg1/wine-shop-api.git
 cd wine-shop-api
+
+# Start everything with Docker
+docker compose up -d --build
 ```
 
-### 2. Environment Variables
-The project comes with a default `.env` file for development.
-```env
-DB_HOST=localhost
-DB_PORT=5433
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=wine_shop
-API_SECRET=mysecretkey
-TOKEN_HOUR_LIFESPAN=24
-```
+| Service | URL |
+|---------|-----|
+| 🌐 Frontend | http://localhost:3000 |
+| ⚙️ API | http://localhost:8080/api |
+| 📚 Swagger | http://localhost:8080/swagger/index.html |
 
-### 3. Start Database (Docker)
-This project uses port **5433** for PostgreSQL to avoid conflicts with local instances.
-```bash
-docker compose up -d
-```
+## 📦 Features
 
-### 4. Run the API
-```bash
-go mod tidy
-go run cmd/server/main.go
-```
-The server will start on `http://localhost:8080`.
+### Customer Features
+- ✅ Browse wine catalog
+- ✅ User registration & login
+- ✅ Add wines to cart
+- ✅ Checkout & place orders
+- ✅ View order history
 
-### 5. Run Tests (Optional)
-A shell script is included to test the full flow (Auth -> Product -> Cart -> Order).
-```bash
-chmod +x test_api.sh
-./test_api.sh
-```
+### Admin Features (API)
+- ✅ Create new wines
+- ✅ Update wine details
+- ✅ Delete wines from catalog
 
 ## 📚 API Endpoints
 
 ### Public
-- `GET /api/health` - Check API status
-- `POST /api/register` - Create a new user account
-  - Body: `{"email": "user@example.com", "password": "password"}`
-- `POST /api/login` - Login and receive JWT
-  - Body: `{"email": "user@example.com", "password": "password"}`
-- `GET /api/products` - List all wines
-- `GET /api/products/:id` - Get wine details
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check |
+| POST | `/api/register` | Register user |
+| POST | `/api/login` | Login & get JWT |
+| GET | `/api/products` | List wines |
+| GET | `/api/products/:id` | Wine details |
 
-### Protected (Requires Bearer Token)
-**Admin**
-- `GET /api/admin/profile` - Verify token validity
-- `POST /api/admin/products` - Create new wine
-- `PUT /api/admin/products/:id` - Update wine details
-- `DELETE /api/admin/products/:id` - Delete wine
+### Protected (User)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/cart` | View cart |
+| POST | `/api/cart` | Add to cart |
+| POST | `/api/orders` | Checkout |
+| GET | `/api/orders` | Order history |
 
-**User (Shopping)**
-- `GET /api/cart` - View current cart
-- `POST /api/cart` - Add item to cart
-  - Body: `{"product_id": 1, "quantity": 2}`
-- `POST /api/orders` - Checkout
-- `GET /api/orders` - View order history
+### Protected (Admin)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/admin/products` | Create wine |
+| PUT | `/api/admin/products/:id` | Update wine |
+| DELETE | `/api/admin/products/:id` | Delete wine |
 
 ## 🗂️ Project Structure
-```text
-wine-shop-api/
-├── cmd/server/      # Entry point
-├── internal/
-│   ├── domain/      # Data models (User, Product, Order)
-│   ├── handler/     # HTTP Controllers
-│   ├── middleware/  # Auth Middleware
-│   ├── service/     # Business Logic
-├── pkg/
-│   ├── config/      # DB Connection
-│   ├── utils/       # JWT Helper
+
 ```
+wine-shop-api/
+├── cmd/server/          # Go entry point
+├── internal/
+│   ├── domain/          # Models
+│   ├── handler/         # HTTP handlers
+│   ├── middleware/      # Auth middleware
+│   └── service/         # Business logic
+├── pkg/
+│   ├── config/          # Database config
+│   └── utils/           # JWT utils
+├── docs/                # Swagger docs
+├── frontend/            # Vue 3 app
+│   ├── src/
+│   │   ├── views/       # Page components
+│   │   ├── stores/      # Pinia stores
+│   │   ├── services/    # API client
+│   │   └── router/      # Vue Router
+│   ├── Dockerfile
+│   └── nginx.conf
+├── docker-compose.yml
+└── .github/workflows/   # CI/CD
+```
+
+## 🧪 Testing
+
+```bash
+# Run integration tests
+chmod +x test_api.sh
+./test_api.sh
+```
+
+## 📄 License
+
+MIT
