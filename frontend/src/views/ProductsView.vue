@@ -15,7 +15,7 @@
         @click="$router.push(`/products/${product.ID}`)"
       >
         <div class="product-image">
-          <img :src="wineBottleImg" :alt="product.name" />
+          <img :src="getWineImage(product.name)" :alt="product.name" />
         </div>
         <div class="product-info">
           <span class="category">{{ product.category }}</span>
@@ -43,7 +43,31 @@ import { useProductStore } from '../stores/products'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
-import wineBottleImg from '../assets/images/wine-bottle.png'
+
+// Import all wine images
+import pinotNoirImg from '../assets/images/pinot-noir.png'
+import cabernetImg from '../assets/images/cabernet.png'
+import merlotImg from '../assets/images/merlot.png'
+import chardonnayImg from '../assets/images/chardonnay.png'
+import sauvignonBlancImg from '../assets/images/sauvignon-blanc.png'
+import roseImg from '../assets/images/rose.png'
+import defaultWineImg from '../assets/images/wine-bottle.png'
+
+const wineImages = {
+  'pinot noir': pinotNoirImg,
+  'cabernet sauvignon': cabernetImg,
+  'cabernet': cabernetImg,
+  'merlot': merlotImg,
+  'chardonnay': chardonnayImg,
+  'sauvignon blanc': sauvignonBlancImg,
+  'rosé': roseImg,
+  'rose': roseImg
+}
+
+const getWineImage = (name) => {
+  const lowerName = name.toLowerCase()
+  return wineImages[lowerName] || defaultWineImg
+}
 
 const productStore = useProductStore()
 const cartStore = useCartStore()
