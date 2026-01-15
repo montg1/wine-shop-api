@@ -1,0 +1,44 @@
+# Render Blueprint - Wine Shop API
+# Deploy with: https://render.com/deploy
+
+services:
+  # Go Backend API
+  - type: web
+    name: wine-shop-api
+    runtime: go
+    buildCommand: go build -o main cmd/server/main.go
+    startCommand: ./main
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: wine-shop-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: wine-shop-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: wine-shop-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: wine-shop-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: wine-shop-db
+          property: database
+      - key: API_SECRET
+        generateValue: true
+      - key: TOKEN_HOUR_LIFESPAN
+        value: 24
+      - key: GIN_MODE
+        value: release
+
+databases:
+  # PostgreSQL Database
+  - name: wine-shop-db
+    plan: free
+    databaseName: wine_shop
+    user: wine_shop_user

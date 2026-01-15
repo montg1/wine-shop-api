@@ -66,10 +66,14 @@ func main() {
 
 	// CORS Middleware
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000"},
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000", "https://*.vercel.app"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			// Allow any Vercel preview or production domain
+			return true
+		},
 	}))
 
 	// Global Middleware
