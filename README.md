@@ -44,10 +44,13 @@ docker compose up -d --build
 
 ### Customer Features
 - ✅ Browse wine catalog
+- ✅ **Search wines by name**
+- ✅ **Filter by category** (Red, White, Rosé)
 - ✅ User registration & login
 - ✅ Add wines to cart
 - ✅ Checkout & place orders
 - ✅ View order history
+- ✅ **Leave reviews & ratings** ⭐
 
 ### Admin Features
 - ✅ Dashboard with stats
@@ -66,7 +69,10 @@ docker compose up -d --build
 | POST | `/api/register` | Register user |
 | POST | `/api/login` | Login & get JWT |
 | GET | `/api/products` | List wines |
+| GET | `/api/products?search=X` | Search by name |
+| GET | `/api/products?category=X` | Filter by category |
 | GET | `/api/products/:id` | Wine details |
+| GET | `/api/products/:id/reviews` | Get reviews |
 
 ### Protected (User)
 | Method | Endpoint | Description |
@@ -75,6 +81,8 @@ docker compose up -d --build
 | POST | `/api/cart` | Add to cart |
 | POST | `/api/orders` | Checkout |
 | GET | `/api/orders` | Order history |
+| POST | `/api/products/:id/reviews` | Create review |
+| DELETE | `/api/products/:id/reviews/:reviewId` | Delete review |
 
 ### Protected (Admin)
 | Method | Endpoint | Description |
