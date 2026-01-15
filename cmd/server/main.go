@@ -56,6 +56,7 @@ func main() {
 		&domain.CartItem{},
 		&domain.Order{},
 		&domain.OrderItem{},
+		&domain.Review{},
 	)
 	if err != nil {
 		log.Fatal("Failed to migrate database: ", err)
@@ -95,6 +96,9 @@ func main() {
 			CartService: cartService,
 		},
 	}
+	reviewHandler := &handler.ReviewHandler{
+		Service: &service.ReviewService{},
+	}
 
 	// Swagger Route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -114,6 +118,9 @@ func main() {
 		// Product Routes (Public)
 		public.GET("/products", productHandler.GetAllProducts)
 		public.GET("/products/:id", productHandler.GetProduct)
+
+		// Review Routes (Public - Read)
+		public.GET("/products/:id/reviews", reviewHandler.GetProductReviews)
 	}
 
 	// Protected Routes (Admin)
@@ -142,6 +149,10 @@ func main() {
 		// Order Routes
 		protectedUser.POST("/orders", orderHandler.CreateOrder)
 		protectedUser.GET("/orders", orderHandler.GetOrders)
+
+		// Review Routes (Protected - Write)
+		protectedUser.POST("/products/:id/reviews", reviewHandler.CreateReview)
+		protectedUser.DELETE("/products/:id/reviews/:reviewId", reviewHandler.DeleteReview)
 	}
 
 	// Start server

@@ -10,6 +10,15 @@
       <div class="product-info">
         <span class="category-badge">{{ product.category }}</span>
         <h1>{{ product.name }}</h1>
+        
+        <!-- Rating Summary -->
+        <div class="rating-summary" v-if="reviewMeta.total_reviews > 0">
+          <div class="stars">
+            <span v-for="i in 5" :key="i" class="star" :class="{ filled: i <= Math.round(reviewMeta.average_rating) }">★</span>
+          </div>
+          <span class="rating-text">{{ reviewMeta.average_rating.toFixed(1) }} ({{ reviewMeta.total_reviews }} reviews)</span>
+        </div>
+        
         <p class="description">{{ product.description }}</p>
         
         <div class="meta">
@@ -26,6 +35,45 @@
       </div>
     </div>
     
+    <!-- Reviews Section -->
+    <div v-if="product" class="reviews-section">
+      <h2>Customer Reviews</h2>
+      
+      <!-- Add Review Form -->
+      <div v-if="authStore.isLoggedIn" class="add-review">
+        <h3>Write a Review</h3>
+        <div class="star-input">
+          <span 
+            v-for="i in 5" 
+            :key="i" 
+            class="star clickable"
+            :class="{ filled: i <= newReview.rating }"
+            @click="newReview.rating = i"
+          >★</span>
+        </div>
+        <textarea v-model="newReview.comment" placeholder="Share your experience..." rows="3"></textarea>
+        <button class="btn btn-primary" @click="submitReview" :disabled="!newReview.rating">Submit Review</button>
+      </div>
+      <div v-else class="login-prompt">
+        <router-link to="/login">Login</router-link> to write a review
+      </div>
+      
+      <!-- Reviews List -->
+      <div class="reviews-list">
+        <div v-if="reviews.length === 0" class="no-reviews">No reviews yet. Be the first!</div>
+        <div v-for="review in reviews" :key="review.ID" class="review-card">
+          <div class="review-header">
+            <div class="stars">
+              <span v-for="i in 5" :key="i" class="star small" :class="{ filled: i <= review.rating }">★</span>
+            </div>
+            <span class="review-author">{{ review.user?.email || 'Anonymous' }}</span>
+            <span class="review-date">{{ formatDate(review.CreatedAt) }}</span>
+          </div>
+          <p class="review-comment">{{ review.comment || 'No comment' }}</p>
+        </div>
+      </div>
+    </div>
+    
     <div v-else class="not-found">Wine not found.</div>
   </div>
 </template>
@@ -36,6 +84,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useProductStore } from '../stores/products'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
+import api from '../services/api'
 
 // Import all wine images
 import pinotNoirImg from '../assets/images/pinot-noir.png'
@@ -70,10 +119,47 @@ const authStore = useAuthStore()
 
 const quantity = ref(1)
 const product = computed(() => productStore.currentProduct)
+const reviews = ref([])
+const reviewMeta = ref({ average_rating: 0, total_reviews: 0 })
+const newReview = ref({ rating: 0, comment: '' })
 
-onMounted(() => {
-  productStore.fetchProduct(route.params.id)
+onMounted(async () => {
+  await productStore.fetchProduct(route.params.id)
+  await fetchReviews()
 })
+
+const fetchReviews = async () => {
+  try {
+    const response = await api.get(`/products/${route.params.id}/reviews`)
+    reviews.value = response.data.data || []
+    reviewMeta.value = response.data.meta
+  } catch (error) {
+    console.error('Failed to fetch reviews:', error)
+  }
+}
+
+const submitReview = async () => {
+  if (!newReview.value.rating) return
+  
+  try {
+    await api.post(`/products/${route.params.id}/reviews`, {
+      rating: newReview.value.rating,
+      comment: newReview.value.comment
+    })
+    newReview.value = { rating: 0, comment: '' }
+    await fetchReviews()
+  } catch (error) {
+    alert(error.response?.data?.error || 'Failed to submit review')
+  }
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
 
 const handleAddToCart = async () => {
   if (!authStore.isLoggedIn) {
@@ -130,7 +216,47 @@ const handleAddToCart = async () => {
 .product-info h1 {
   font-size: 2.5rem;
   color: var(--text);
+  margin-bottom: 10px;
+}
+
+.rating-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 20px;
+}
+
+.rating-text {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: #ddd;
+  font-size: 1.2rem;
+}
+
+.star.filled {
+  color: #f4c150;
+}
+
+.star.small {
+  font-size: 1rem;
+}
+
+.star.clickable {
+  cursor: pointer;
+  font-size: 1.8rem;
+  transition: transform 0.2s;
+}
+
+.star.clickable:hover {
+  transform: scale(1.2);
 }
 
 .description {
@@ -183,6 +309,101 @@ const handleAddToCart = async () => {
 
 .back-link:hover {
   text-decoration: underline;
+}
+
+/* Reviews Section */
+.reviews-section {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+
+.reviews-section h2 {
+  font-size: 1.8rem;
+  color: var(--text);
+  margin-bottom: 30px;
+}
+
+.add-review {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.add-review h3 {
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+}
+
+.star-input {
+  margin-bottom: 15px;
+}
+
+.add-review textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  resize: vertical;
+  margin-bottom: 15px;
+  font-family: inherit;
+}
+
+.login-prompt {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  margin-bottom: 30px;
+  color: var(--text-muted);
+}
+
+.login-prompt a {
+  color: var(--primary);
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.no-reviews {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
+
+.review-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.review-author {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.review-date {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-left: auto;
+}
+
+.review-comment {
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
 .loading, .not-found {
