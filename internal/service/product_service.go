@@ -16,17 +16,29 @@ func (s *ProductService) CreateProduct(product *domain.Product) (*domain.Product
 	return product, nil
 }
 
-func (s *ProductService) GetAllProducts(page, limit int) ([]domain.Product, int64, error) {
+func (s *ProductService) GetAllProducts(page, limit int, search, category string) ([]domain.Product, int64, error) {
 	var products []domain.Product
 	var total int64
 
 	offset := (page - 1) * limit
 
-	if err := config.DB.Model(&domain.Product{}).Count(&total).Error; err != nil {
+	query := config.DB.Model(&domain.Product{})
+
+	// Apply search filter
+	if search != "" {
+		query = query.Where("LOWER(name) LIKE LOWER(?)", "%"+search+"%")
+	}
+
+	// Apply category filter
+	if category != "" {
+		query = query.Where("LOWER(category) = LOWER(?)", category)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	if err := config.DB.Limit(limit).Offset(offset).Find(&products).Error; err != nil {
+	if err := query.Limit(limit).Offset(offset).Find(&products).Error; err != nil {
 		return nil, 0, err
 	}
 

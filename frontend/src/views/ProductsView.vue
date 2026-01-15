@@ -5,6 +5,44 @@
       <p>Carefully selected wines from exceptional vineyards</p>
     </div>
     
+    <!-- Search and Filter -->
+    <div class="filters">
+      <div class="search-box">
+        <input 
+          v-model="searchQuery" 
+          type="text" 
+          placeholder="Search wines..." 
+          @input="handleSearch"
+        />
+      </div>
+      <div class="category-filters">
+        <button 
+          :class="{ active: selectedCategory === '' }" 
+          @click="filterByCategory('')"
+        >
+          All
+        </button>
+        <button 
+          :class="{ active: selectedCategory === 'Red' }" 
+          @click="filterByCategory('Red')"
+        >
+          Red
+        </button>
+        <button 
+          :class="{ active: selectedCategory === 'White' }" 
+          @click="filterByCategory('White')"
+        >
+          White
+        </button>
+        <button 
+          :class="{ active: selectedCategory === 'Rosé' }" 
+          @click="filterByCategory('Rosé')"
+        >
+          Rosé
+        </button>
+      </div>
+    </div>
+    
     <div v-if="productStore.loading" class="loading">Loading wines...</div>
     
     <div v-else class="products-grid">
@@ -32,13 +70,13 @@
     </div>
     
     <div v-if="productStore.products.length === 0 && !productStore.loading" class="empty">
-      <p>No wines available at the moment.</p>
+      <p>No wines found{{ searchQuery ? ' for "' + searchQuery + '"' : '' }}.</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useProductStore } from '../stores/products'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
@@ -74,9 +112,26 @@ const cartStore = useCartStore()
 const authStore = useAuthStore()
 const router = useRouter()
 
+const searchQuery = ref('')
+const selectedCategory = ref('')
+let searchTimeout = null
+
 onMounted(() => {
   productStore.fetchProducts()
 })
+
+const handleSearch = () => {
+  // Debounce search
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    productStore.fetchProducts(1, 50, searchQuery.value, selectedCategory.value)
+  }, 300)
+}
+
+const filterByCategory = (category) => {
+  selectedCategory.value = category
+  productStore.fetchProducts(1, 50, searchQuery.value, category)
+}
 
 const addToCart = async (productId) => {
   if (!authStore.isLoggedIn) {
@@ -97,7 +152,7 @@ const addToCart = async (productId) => {
 
 .page-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .page-header h1 {
@@ -109,6 +164,59 @@ const addToCart = async (productId) => {
 .page-header p {
   color: var(--text-muted);
   font-size: 1.1rem;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+.search-box input {
+  padding: 14px 20px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text);
+  font-size: 1rem;
+  width: 280px;
+  transition: border-color 0.3s;
+}
+
+.search-box input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.category-filters {
+  display: flex;
+  gap: 10px;
+}
+
+.category-filters button {
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 1px solid var(--border);
+  background: var(--card-bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+.category-filters button:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.category-filters button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
 
 .products-grid {
@@ -175,5 +283,14 @@ const addToCart = async (productId) => {
   padding: 60px;
   color: var(--text-muted);
   font-size: 1.1rem;
+}
+
+@media (max-width: 600px) {
+  .filters {
+    flex-direction: column;
+  }
+  .search-box input {
+    width: 100%;
+  }
 }
 </style>

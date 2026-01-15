@@ -44,20 +44,24 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 
 // GetAllProducts godoc
 // @Summary      List all products
-// @Description  Get a list of wines with pagination
+// @Description  Get a list of wines with pagination, search, and category filter
 // @Tags         Products
 // @Accept       json
 // @Produce      json
-// @Param        page   query     int  false  "Page Number"
-// @Param        limit  query     int  false  "Limit per page"
+// @Param        page      query     int     false  "Page Number"
+// @Param        limit     query     int     false  "Limit per page"
+// @Param        search    query     string  false  "Search by wine name"
+// @Param        category  query     string  false  "Filter by category (Red, White, Rosé)"
 // @Success      200    {object}  map[string]interface{}
 // @Failure      500    {object}  map[string]interface{}
 // @Router       /products [get]
 func (h *ProductHandler) GetAllProducts(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	search := c.Query("search")
+	category := c.Query("category")
 
-	products, total, err := h.Service.GetAllProducts(page, limit)
+	products, total, err := h.Service.GetAllProducts(page, limit, search, category)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -66,9 +70,11 @@ func (h *ProductHandler) GetAllProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"data": products,
 		"meta": gin.H{
-			"total": total,
-			"page":  page,
-			"limit": limit,
+			"total":    total,
+			"page":     page,
+			"limit":    limit,
+			"search":   search,
+			"category": category,
 		},
 	})
 }
