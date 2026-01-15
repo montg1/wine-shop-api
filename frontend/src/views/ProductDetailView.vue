@@ -3,7 +3,9 @@
     <div v-if="productStore.loading" class="loading">Loading...</div>
     
     <div v-else-if="product" class="detail-content">
-      <div class="product-hero">🍷</div>
+      <div class="product-hero">
+        <img :src="getWineImage(product.name)" :alt="product.name" />
+      </div>
       
       <div class="product-info">
         <span class="category-badge">{{ product.category }}</span>
@@ -35,6 +37,31 @@ import { useProductStore } from '../stores/products'
 import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
 
+// Import all wine images
+import pinotNoirImg from '../assets/images/pinot-noir.png'
+import cabernetImg from '../assets/images/cabernet.png'
+import merlotImg from '../assets/images/merlot.png'
+import chardonnayImg from '../assets/images/chardonnay.png'
+import sauvignonBlancImg from '../assets/images/sauvignon-blanc.png'
+import roseImg from '../assets/images/rose.png'
+import defaultWineImg from '../assets/images/wine-bottle.png'
+
+const wineImages = {
+  'pinot noir': pinotNoirImg,
+  'cabernet sauvignon': cabernetImg,
+  'cabernet': cabernetImg,
+  'merlot': merlotImg,
+  'chardonnay': chardonnayImg,
+  'sauvignon blanc': sauvignonBlancImg,
+  'rosé': roseImg,
+  'rose': roseImg
+}
+
+const getWineImage = (name) => {
+  const lowerName = name.toLowerCase()
+  return wineImages[lowerName] || defaultWineImg
+}
+
 const route = useRoute()
 const router = useRouter()
 const productStore = useProductStore()
@@ -60,86 +87,98 @@ const handleAddToCart = async () => {
 
 <style scoped>
 .product-detail {
-  padding: 40px 20px;
-  max-width: 900px;
+  padding: 60px 20px;
+  max-width: 1000px;
   margin: 0 auto;
 }
 
 .detail-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: 60px;
   align-items: start;
 }
 
 .product-hero {
-  background: linear-gradient(135deg, #3d2a4a 0%, #5a3a6a 100%);
-  border-radius: 20px;
-  height: 400px;
+  background: var(--bg-warm);
+  border-radius: 12px;
+  height: 450px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8rem;
+  padding: 40px;
+}
+
+.product-hero img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .category-badge {
   background: var(--primary);
   color: #fff;
-  padding: 5px 15px;
+  padding: 6px 16px;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   display: inline-block;
   margin-bottom: 15px;
 }
 
 .product-info h1 {
   font-size: 2.5rem;
-  margin-bottom: 15px;
+  color: var(--text);
+  margin-bottom: 20px;
 }
 
 .description {
-  color: #aaa;
-  line-height: 1.7;
-  margin-bottom: 25px;
+  color: var(--text-muted);
+  line-height: 1.8;
+  margin-bottom: 30px;
+  font-size: 1.05rem;
 }
 
 .meta {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
+  gap: 25px;
+  margin-bottom: 35px;
 }
 
 .price {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: bold;
   color: var(--primary);
 }
 
 .stock {
-  color: #6a6;
+  color: #5a8a5a;
   font-size: 0.95rem;
 }
 
 .actions {
   display: flex;
   gap: 15px;
-  margin-bottom: 30px;
+  margin-bottom: 35px;
 }
 
 .actions input {
   width: 80px;
-  padding: 12px;
+  padding: 14px;
   border-radius: 8px;
-  border: 1px solid #444;
-  background: #222;
-  color: #fff;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
   text-align: center;
+  font-size: 1rem;
 }
 
 .back-link {
   color: var(--primary);
   text-decoration: none;
+  font-size: 0.95rem;
 }
 
 .back-link:hover {
@@ -149,12 +188,15 @@ const handleAddToCart = async () => {
 .loading, .not-found {
   text-align: center;
   padding: 100px;
-  color: #888;
+  color: var(--text-muted);
 }
 
 @media (max-width: 768px) {
   .detail-content {
     grid-template-columns: 1fr;
+  }
+  .product-hero {
+    height: 300px;
   }
 }
 </style>
