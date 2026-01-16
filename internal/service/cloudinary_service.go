@@ -31,8 +31,7 @@ func (s *CloudinaryService) UploadImage(file multipart.File, folder string) (str
 	ctx := context.Background()
 
 	uploadResult, err := s.cld.Upload.Upload(ctx, file, uploader.UploadParams{
-		Folder:         folder,
-		Transformation: "c_limit,w_800,h_800,q_auto",
+		Folder: folder,
 	})
 	if err != nil {
 		return "", err

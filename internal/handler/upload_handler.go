@@ -34,7 +34,7 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 	// Upload to Cloudinary
 	url, err := h.CloudinaryService.UploadImage(file, "wine-shop/products")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload image: " + err.Error()})
 		return
 	}
 
