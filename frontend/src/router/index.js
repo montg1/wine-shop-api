@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const routes = [
     {
@@ -42,7 +43,7 @@ const routes = [
     {
         path: '/admin',
         component: () => import('../views/admin/AdminLayout.vue'),
-        meta: { requiresAuth: true },
+        meta: { requiresAuth: true, requiresAdmin: true },
         children: [
             {
                 path: '',
@@ -74,13 +75,27 @@ const router = createRouter({
 })
 
 // Navigation Guard
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const token = localStorage.getItem('token')
+
+    // Requires authentication
     if (to.meta.requiresAuth && !token) {
-        next('/login')
-    } else {
-        next()
+        return next('/login')
     }
+
+    // Requires admin role
+    if (to.meta.requiresAdmin) {
+        const authStore = useAuthStore()
+        // Wait for user to be loaded if not already
+        if (!authStore.user && token) {
+            await authStore.fetchUser()
+        }
+        if (!authStore.isAdmin) {
+            return next('/products')
+        }
+    }
+
+    next()
 })
 
 export default router

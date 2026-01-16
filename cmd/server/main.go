@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"wine-shop-api/internal/domain"
 	"wine-shop-api/internal/handler"
@@ -80,6 +81,11 @@ func main() {
 	// Global Middleware
 	r.Use(gin.Recovery())
 
+	// Rate Limiter: 100 requests per minute for general routes
+	generalLimiter := middleware.NewRateLimiter(100, time.Minute)
+	// Rate Limiter: 10 requests per minute for auth routes (prevent brute force)
+	authLimiter := middleware.NewRateLimiter(10, time.Minute)
+
 	// Initialize Handlers
 	authHandler := &handler.AuthHandler{
 		Service: &service.UserService{},
@@ -105,9 +111,11 @@ func main() {
 
 	// Public Routes
 	public := r.Group("/api")
+	public.Use(middleware.RateLimitMiddleware(generalLimiter))
 	{
-		public.POST("/register", authHandler.Register)
-		public.POST("/login", authHandler.Login)
+		// Auth Routes with stricter rate limit
+		public.POST("/register", middleware.RateLimitMiddleware(authLimiter), authHandler.Register)
+		public.POST("/login", middleware.RateLimitMiddleware(authLimiter), authHandler.Login)
 		public.GET("/health", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
 				"status":  "ok",
@@ -123,9 +131,9 @@ func main() {
 		public.GET("/products/:id/reviews", reviewHandler.GetProductReviews)
 	}
 
-	// Protected Routes (Admin)
+	// Protected Routes (Admin) - Requires admin role
 	protectedAdmin := r.Group("/api/admin")
-	protectedAdmin.Use(middleware.JwtAuthMiddleware())
+	protectedAdmin.Use(middleware.AdminMiddleware())
 	{
 		protectedAdmin.GET("/profile", func(c *gin.Context) {
 			userID, _ := utils.ExtractTokenID(c)
@@ -142,6 +150,9 @@ func main() {
 	protectedUser := r.Group("/api")
 	protectedUser.Use(middleware.JwtAuthMiddleware())
 	{
+		// User Info Route
+		protectedUser.GET("/me", authHandler.GetMe)
+
 		// Cart Routes
 		protectedUser.POST("/cart", cartHandler.AddToCart)
 		protectedUser.GET("/cart", cartHandler.GetCart)

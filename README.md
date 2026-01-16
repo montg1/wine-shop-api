@@ -23,6 +23,15 @@ A full-stack e-commerce application for an online wine shop.
 | **Docs** | Swagger/OpenAPI |
 | **Hosting** | Vercel (Frontend), Render (Backend) |
 
+## 🔐 Security Features
+
+- ✅ **Password Hashing** - BCrypt with secure cost factor
+- ✅ **JWT Authentication** - Token-based auth with expiration
+- ✅ **Role-Based Access Control (RBAC)** - Admin vs Customer roles
+- ✅ **Rate Limiting** - 10 req/min for auth, 100 req/min general
+- ✅ **Input Validation** - Gin binding validation
+- ✅ **CORS Protection** - Configured for allowed origins
+
 ## 🛠️ Local Development
 
 ```bash
@@ -57,6 +66,7 @@ docker compose up -d --build
 - ✅ Create new wines
 - ✅ Update wine details
 - ✅ Delete wines from catalog
+- ✅ **Admin-only access** (RBAC)
 
 ![Admin Panel](docs/images/admin_panel.png)
 
@@ -77,6 +87,7 @@ docker compose up -d --build
 ### Protected (User)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| GET | `/api/me` | Get current user info |
 | GET | `/api/cart` | View cart |
 | POST | `/api/cart` | Add to cart |
 | POST | `/api/orders` | Checkout |
@@ -84,7 +95,7 @@ docker compose up -d --build
 | POST | `/api/products/:id/reviews` | Create review |
 | DELETE | `/api/products/:id/reviews/:reviewId` | Delete review |
 
-### Protected (Admin)
+### Protected (Admin Only)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/admin/products` | Create wine |
@@ -99,7 +110,7 @@ wine-shop-api/
 ├── internal/
 │   ├── domain/          # Models
 │   ├── handler/         # HTTP handlers
-│   ├── middleware/      # Auth middleware
+│   ├── middleware/      # Auth, Admin, RateLimiter
 │   └── service/         # Business logic
 ├── pkg/
 │   ├── config/          # Database config

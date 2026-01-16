@@ -8,7 +8,8 @@
           🛒 <span v-if="cartStore.totalItems" class="badge">{{ cartStore.totalItems }}</span>
         </router-link>
         <router-link v-if="authStore.isLoggedIn" to="/orders">Orders</router-link>
-        <router-link v-if="authStore.isLoggedIn" to="/admin" class="admin-link">⚙️ Admin</router-link>
+        <!-- Admin link only visible to admin users -->
+        <router-link v-if="authStore.isAdmin" to="/admin" class="admin-link">⚙️ Admin</router-link>
         <template v-if="authStore.isLoggedIn">
           <button @click="handleLogout" class="btn-link">Logout</button>
         </template>
@@ -38,7 +39,9 @@ const router = useRouter()
 const authStore = useAuthStore()
 const cartStore = useCartStore()
 
-onMounted(() => {
+onMounted(async () => {
+  // Initialize auth state (fetch user info if token exists)
+  await authStore.init()
   if (authStore.isLoggedIn) {
     cartStore.fetchCart()
   }

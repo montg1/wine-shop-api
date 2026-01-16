@@ -8,7 +8,8 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     getters: {
-        isLoggedIn: (state) => !!state.token
+        isLoggedIn: (state) => !!state.token,
+        isAdmin: (state) => state.user?.role === 'admin'
     },
 
     actions: {
@@ -16,6 +17,8 @@ export const useAuthStore = defineStore('auth', {
             const response = await api.post('/login', { email, password })
             this.token = response.data.token
             localStorage.setItem('token', this.token)
+            // Fetch user info after login
+            await this.fetchUser()
             return response.data
         },
 
@@ -24,10 +27,31 @@ export const useAuthStore = defineStore('auth', {
             return response.data
         },
 
+        async fetchUser() {
+            if (!this.token) return
+            try {
+                const response = await api.get('/me')
+                this.user = response.data.data
+            } catch (error) {
+                console.error('Failed to fetch user:', error)
+                // Token might be invalid, clear it
+                if (error.response?.status === 401) {
+                    this.logout()
+                }
+            }
+        },
+
         logout() {
             this.token = null
             this.user = null
             localStorage.removeItem('token')
+        },
+
+        // Initialize auth state on app load
+        async init() {
+            if (this.token) {
+                await this.fetchUser()
+            }
         }
     }
 })

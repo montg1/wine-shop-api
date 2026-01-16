@@ -79,3 +79,27 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
+
+// GetMe godoc
+// @Summary      Get current user
+// @Description  Returns the authenticated user's info
+// @Tags         Auth
+// @Security     BearerAuth
+// @Success      200 {object} domain.User
+// @Failure      401 {object} map[string]interface{}
+// @Router       /me [get]
+func (h *AuthHandler) GetMe(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	user, err := h.Service.GetUserByID(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": user})
+}

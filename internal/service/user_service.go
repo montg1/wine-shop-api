@@ -65,3 +65,22 @@ func (s *UserService) Login(email, password string) (string, error) {
 
 	return token, nil
 }
+
+// PromoteToAdmin promotes a user to admin role
+func (s *UserService) PromoteToAdmin(userID uint) error {
+	var user domain.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		return errors.New("user not found")
+	}
+	user.Role = "admin"
+	return config.DB.Save(&user).Error
+}
+
+// GetUserByID returns a user by ID
+func (s *UserService) GetUserByID(userID uint) (*domain.User, error) {
+	var user domain.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		return nil, errors.New("user not found")
+	}
+	return &user, nil
+}
