@@ -106,6 +106,18 @@ func main() {
 		Service: &service.ReviewService{},
 	}
 
+	// Initialize Cloudinary Service (optional - if env vars not set, skip)
+	var uploadHandler *handler.UploadHandler
+	cloudinaryService, err := service.NewCloudinaryService()
+	if err == nil {
+		uploadHandler = &handler.UploadHandler{
+			CloudinaryService: cloudinaryService,
+		}
+		log.Println("Cloudinary service initialized")
+	} else {
+		log.Println("Cloudinary not configured - image upload disabled")
+	}
+
 	// Swagger Route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -144,6 +156,11 @@ func main() {
 		protectedAdmin.POST("/products", productHandler.CreateProduct)
 		protectedAdmin.PUT("/products/:id", productHandler.UpdateProduct)
 		protectedAdmin.DELETE("/products/:id", productHandler.DeleteProduct)
+
+		// Image Upload Route (Admin)
+		if uploadHandler != nil {
+			protectedAdmin.POST("/upload", uploadHandler.UploadImage)
+		}
 	}
 
 	// Protected Routes (User)

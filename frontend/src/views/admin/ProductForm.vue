@@ -35,10 +35,34 @@
           <option value="Dessert">Dessert</option>
         </select>
       </div>
+
+      <!-- Image Upload -->
+      <div class="form-group">
+        <label>Product Image</label>
+        <div class="image-upload-area">
+          <div v-if="form.image_url || imagePreview" class="image-preview">
+            <img :src="imagePreview || form.image_url" alt="Preview" />
+            <button type="button" class="remove-btn" @click="removeImage">×</button>
+          </div>
+          <div v-else class="upload-placeholder">
+            <input 
+              type="file" 
+              accept="image/*" 
+              @change="handleImageSelect" 
+              ref="fileInput"
+              id="image-input"
+            />
+            <label for="image-input" class="upload-label">
+              📷 Click to upload image
+            </label>
+          </div>
+        </div>
+        <p v-if="uploading" class="upload-status">Uploading image...</p>
+      </div>
       
       <div class="form-actions">
         <router-link to="/admin/products" class="btn btn-secondary">Cancel</router-link>
-        <button type="submit" class="btn btn-primary" :disabled="loading">
+        <button type="submit" class="btn btn-primary" :disabled="loading || uploading">
           {{ loading ? 'Saving...' : (isEdit ? 'Update Wine' : 'Create Wine') }}
         </button>
       </div>
@@ -58,14 +82,18 @@ const router = useRouter()
 
 const isEdit = computed(() => !!route.params.id)
 const loading = ref(false)
+const uploading = ref(false)
 const error = ref('')
+const fileInput = ref(null)
+const imagePreview = ref(null)
 
 const form = ref({
   name: '',
   description: '',
   price: 0,
   stock: 0,
-  category: 'Red'
+  category: 'Red',
+  image_url: ''
 })
 
 onMounted(async () => {
@@ -78,13 +106,53 @@ onMounted(async () => {
         description: product.description || '',
         price: product.price,
         stock: product.stock,
-        category: product.category || 'Red'
+        category: product.category || 'Red',
+        image_url: product.image_url || ''
       }
     } catch (err) {
       error.value = 'Failed to load product'
     }
   }
 })
+
+const handleImageSelect = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Show preview
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    imagePreview.value = e.target.result
+  }
+  reader.readAsDataURL(file)
+
+  // Upload to Cloudinary
+  uploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const res = await api.post('/admin/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    
+    form.value.image_url = res.data.url
+    imagePreview.value = null
+  } catch (err) {
+    error.value = 'Failed to upload image'
+    imagePreview.value = null
+  } finally {
+    uploading.value = false
+  }
+}
+
+const removeImage = () => {
+  form.value.image_url = ''
+  imagePreview.value = null
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
+}
 
 const handleSubmit = async () => {
   loading.value = true
@@ -128,7 +196,7 @@ const handleSubmit = async () => {
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #ccc;
+  color: var(--text-muted);
 }
 
 .form-group input,
@@ -137,9 +205,9 @@ const handleSubmit = async () => {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #444;
-  background: #1a1a2e;
-  color: #fff;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
   font-size: 1rem;
 }
 
@@ -156,6 +224,70 @@ const handleSubmit = async () => {
   gap: 20px;
 }
 
+/* Image Upload Styles */
+.image-upload-area {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+}
+
+.upload-placeholder input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+}
+
+.upload-label {
+  display: block;
+  padding: 40px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.upload-label:hover {
+  color: var(--primary);
+}
+
+.image-preview {
+  position: relative;
+  display: inline-block;
+}
+
+.image-preview img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.remove-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #e55;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.upload-status {
+  color: var(--primary);
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
 .form-actions {
   display: flex;
   gap: 15px;
@@ -163,8 +295,8 @@ const handleSubmit = async () => {
 }
 
 .btn-secondary {
-  background: #333;
-  color: #fff;
+  background: var(--border);
+  color: var(--text);
   padding: 12px 25px;
   border-radius: 10px;
   text-decoration: none;

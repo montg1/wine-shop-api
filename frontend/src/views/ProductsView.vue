@@ -53,7 +53,7 @@
         @click="$router.push(`/products/${product.ID}`)"
       >
         <div class="product-image">
-          <img :src="getWineImage(product.name)" :alt="product.name" />
+          <img :src="getWineImage(product)" :alt="product.name" />
         </div>
         <div class="product-info">
           <span class="category">{{ product.category }}</span>
@@ -82,7 +82,7 @@ import { useCartStore } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 
-// Import all wine images
+// Import all wine images (fallback for products without Cloudinary URL)
 import pinotNoirImg from '../assets/images/pinot-noir.png'
 import cabernetImg from '../assets/images/cabernet.png'
 import merlotImg from '../assets/images/merlot.png'
@@ -102,8 +102,12 @@ const wineImages = {
   'rose': roseImg
 }
 
-const getWineImage = (name) => {
-  const lowerName = name.toLowerCase()
+// Use Cloudinary URL if available, fallback to local mapping
+const getWineImage = (product) => {
+  if (product.image_url) {
+    return product.image_url
+  }
+  const lowerName = product.name.toLowerCase()
   return wineImages[lowerName] || defaultWineImg
 }
 
