@@ -7,24 +7,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-  test:
-    name: Build, Test & Security
+  # Stage 1: Build
+  build:
+    name: 🔨 Build
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: wine_shop
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,8 +30,61 @@ jobs:
       - name: Build Application
         run: go build -o main cmd/server/main.go
 
+      - name: Upload Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-binary
+          path: main
+
+  # Stage 2: Unit Tests (doesn't need server)
+  unit-test:
+    name: 🧪 Unit Tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
       - name: Run Unit Tests
         run: go test -v ./...
+
+  # Stage 3: Integration Tests (needs server + database)
+  integration-test:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-test
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wine_shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: go-binary
+
+      - name: Make Binary Executable
+        run: chmod +x main
 
       - name: Start Server
         env:
@@ -66,6 +105,53 @@ jobs:
         run: |
           chmod +x test_api.sh
           ./test_api.sh
+
+  # Stage 4: Security Tests (needs server + database)
+  security-test:
+    name: 🔐 Security Tests
+    runs-on: ubuntu-latest
+    needs: integration-test
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: wine_shop
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: go-binary
+
+      - name: Make Binary Executable
+        run: chmod +x main
+
+      - name: Start Server
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_NAME: wine_shop
+          API_SECRET: supersecretkey
+          TOKEN_HOUR_LIFESPAN: 24
+        run: |
+          nohup ./main > server.log 2>&1 &
+          echo "Waiting for server to start..."
+          sleep 5
+          cat server.log
 
       - name: Run Security Tests
         run: |
