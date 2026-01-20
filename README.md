@@ -1,8 +1,6 @@
 # Wine Shop 🍷
 
-A full-stack e-commerce application for an online wine shop.
-
-![Wine Shop Homepage](docs/images/homepage.png)
+A full-stack e-commerce application for an online wine shop with AI-powered wine recommendations.
 
 ## 🌐 Live Demo
 
@@ -20,8 +18,51 @@ A full-stack e-commerce application for an online wine shop.
 | **Backend** | Go, Gin, GORM |
 | **Database** | PostgreSQL |
 | **Auth** | JWT, BCrypt |
+| **Images** | Cloudinary CDN |
 | **Docs** | Swagger/OpenAPI |
 | **Hosting** | Vercel (Frontend), Render (Backend) |
+
+## 🔄 CI/CD Pipeline
+
+```mermaid
+flowchart LR
+    A[👨‍💻 Developer] -->|git push| B[GitHub]
+    B -->|trigger| C[GitHub Actions]
+    
+    subgraph CI ["🔧 CI Pipeline"]
+        C --> D[Build & Test]
+        D --> E[Security Tests]
+        E --> F[Docker Build]
+    end
+    
+    subgraph CD ["🚀 CD Pipeline"]
+        F -->|auto-deploy| G[Render]
+        F -->|auto-deploy| H[Vercel]
+    end
+    
+    G -->|Go Backend| I[(PostgreSQL)]
+    H -->|Vue Frontend| J[🌐 Users]
+    G --> J
+
+    style A fill:#4CAF50
+    style B fill:#333
+    style C fill:#2088FF
+    style G fill:#46E3B7
+    style H fill:#000
+    style I fill:#336791
+    style J fill:#FF6B6B
+```
+
+### Pipeline Stages
+
+| Stage | Description |
+|-------|-------------|
+| **Build & Test** | Go compilation, unit tests, code formatting |
+| **Integration Tests** | API tests with PostgreSQL service |
+| **Security Tests** | RBAC, Rate Limiting, JWT, SQL Injection checks |
+| **Docker Build** | Verify container builds correctly |
+| **Deploy Backend** | Auto-deploy to Render on push to `main` |
+| **Deploy Frontend** | Auto-deploy to Vercel on push to `main` |
 
 ## 🔐 Security Features
 
@@ -60,15 +101,27 @@ docker compose up -d --build
 - ✅ Checkout & place orders
 - ✅ View order history
 - ✅ **Leave reviews & ratings** ⭐
+- ✅ **🤖 Wine Chatbot** - AI recommendations
 
 ### Admin Features
 - ✅ Dashboard with stats
 - ✅ Create new wines
 - ✅ Update wine details
 - ✅ Delete wines from catalog
+- ✅ **Image upload** (Cloudinary)
 - ✅ **Admin-only access** (RBAC)
 
-![Admin Panel](docs/images/admin_panel.png)
+## 🤖 Wine Chatbot
+
+The built-in chatbot helps customers find the perfect wine:
+
+| Command | Response |
+|---------|----------|
+| "Red wines" | Shows all red wines |
+| "White wines" | Shows all white wines |
+| "Under $40" | Budget-friendly options |
+| "Premium" | Top-priced selections |
+| "Recommend something" | Random picks |
 
 ## 📚 API Endpoints
 
@@ -101,6 +154,7 @@ docker compose up -d --build
 | POST | `/api/admin/products` | Create wine |
 | PUT | `/api/admin/products/:id` | Update wine |
 | DELETE | `/api/admin/products/:id` | Delete wine |
+| POST | `/api/admin/upload` | Upload image |
 
 ## 🗂️ Project Structure
 
@@ -118,6 +172,7 @@ wine-shop-api/
 ├── docs/                # Swagger docs
 ├── frontend/            # Vue 3 app
 │   ├── src/
+│   │   ├── components/  # ChatbotWidget
 │   │   ├── views/       # Page components
 │   │   ├── stores/      # Pinia stores
 │   │   ├── services/    # API client
@@ -132,8 +187,10 @@ wine-shop-api/
 
 ```bash
 # Run integration tests
-chmod +x test_api.sh
 ./test_api.sh
+
+# Run security tests
+./test_security.sh
 ```
 
 ## 📄 License
