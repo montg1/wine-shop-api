@@ -26,6 +26,9 @@
     <footer>
       <p>© 2026 Wine Shop. All rights reserved.</p>
     </footer>
+
+    <!-- Wine Chatbot Widget -->
+    <ChatbotWidget />
   </div>
 </template>
 
@@ -34,6 +37,7 @@ import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useCartStore } from './stores/cart'
+import ChatbotWidget from './components/ChatbotWidget.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
