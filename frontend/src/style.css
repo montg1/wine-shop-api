@@ -82,6 +82,14 @@ a:hover {
   font-weight: 600;
   color: var(--text);
   letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
 }
 
 .nav-links {

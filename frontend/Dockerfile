@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# Build without production env - uses /api as default (proxied by nginx)
+ENV VITE_API_URL=/api
 RUN npm run build
 
 # Production Stage

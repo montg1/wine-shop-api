@@ -1,7 +1,10 @@
 <template>
   <div id="app">
     <header class="navbar">
-      <router-link to="/" class="logo">🍷 Wine Shop</router-link>
+      <router-link to="/" class="logo">
+        <img src="/logo.png" alt="Wine Shop Logo" class="logo-img" />
+        Wine Shop
+      </router-link>
       <nav class="nav-links">
         <router-link to="/products">Wines</router-link>
         <router-link v-if="authStore.isLoggedIn" to="/cart" class="cart-link">

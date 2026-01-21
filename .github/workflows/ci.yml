@@ -108,6 +108,11 @@ jobs:
           chmod +x test_api.sh
           ./test_api.sh
 
+      - name: Run Analytics Dashboard Tests
+        run: |
+          chmod +x test_analytics.sh
+          ./test_analytics.sh
+
   # Stage 4: Security Tests (needs server + database)
   security-test:
     name: 🔐 Security Tests
