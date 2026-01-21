@@ -191,10 +191,18 @@ onMounted(async () => {
     // Stats
     stats.value = statsRes.data.data || stats.value
 
-    // Category Pie Chart
+    // Category Pie Chart with correct wine colors
     const categories = categoryRes.data.data || []
+    const categoryColors = {
+      'Red': '#8B0000',      // Dark red
+      'White': '#F5F5DC',    // Beige/cream
+      'Rosé': '#FFB6C1',     // Light pink
+      'Sparkling': '#FFD700', // Gold
+      'Dessert': '#8B4513'   // Brown
+    }
     categoryData.labels = categories.map(c => c.category || 'Unknown')
     categoryData.datasets[0].data = categories.map(c => c.revenue)
+    categoryData.datasets[0].backgroundColor = categories.map(c => categoryColors[c.category] || '#888888')
 
     // Top Products
     topProducts.value = topRes.data.data || []
@@ -242,10 +250,10 @@ onMounted(async () => {
 .stat-value {
   font-size: 1.8rem;
   font-weight: bold;
-  color: #fff;
+  color: #722F37;
 }
 
-.stat-label { color: #888; font-size: 0.9rem; }
+.stat-label { color: #555; font-size: 0.9rem; }
 
 /* Charts */
 .charts-row {

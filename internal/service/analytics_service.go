@@ -106,9 +106,9 @@ func (s *AnalyticsService) GetSalesByDay(days int) ([]SalesByDay, error) {
 	startDate := time.Now().AddDate(0, 0, -days)
 
 	config.DB.Table("orders").
-		Select("DATE(created_at) as date, COALESCE(SUM(total_amount), 0) as revenue, COUNT(*) as orders").
+		Select("TO_CHAR(created_at, 'YYYY-MM-DD') as date, COALESCE(SUM(total), 0) as revenue, COUNT(*) as orders").
 		Where("created_at >= ?", startDate).
-		Group("DATE(created_at)").
+		Group("TO_CHAR(created_at, 'YYYY-MM-DD')").
 		Order("date ASC").
 		Scan(&results)
 
