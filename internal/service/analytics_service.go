@@ -101,16 +101,21 @@ func (s *AnalyticsService) GetTopProducts(limit int) ([]TopProduct, error) {
 
 // GetSalesByDay returns daily sales for the last N days
 func (s *AnalyticsService) GetSalesByDay(days int) ([]SalesByDay, error) {
-	var results []SalesByDay
+	// Initialize as empty slice to return [] instead of null in JSON
+	results := []SalesByDay{}
 
 	startDate := time.Now().AddDate(0, 0, -days)
 
-	config.DB.Table("orders").
+	err := config.DB.Table("orders").
 		Select("TO_CHAR(created_at, 'YYYY-MM-DD') as date, COALESCE(SUM(total), 0) as revenue, COUNT(*) as orders").
 		Where("created_at >= ?", startDate).
 		Group("TO_CHAR(created_at, 'YYYY-MM-DD')").
 		Order("date ASC").
-		Scan(&results)
+		Scan(&results).Error
+
+	if err != nil {
+		return []SalesByDay{}, err
+	}
 
 	return results, nil
 }
