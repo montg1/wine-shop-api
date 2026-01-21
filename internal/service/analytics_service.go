@@ -55,7 +55,7 @@ func (s *AnalyticsService) GetDashboardStats() (*DashboardStats, error) {
 
 	// Total revenue from orders
 	config.DB.Model(&domain.Order{}).
-		Select("COALESCE(SUM(total_amount), 0)").
+		Select("COALESCE(SUM(total), 0)").
 		Scan(&stats.TotalRevenue)
 
 	// Total orders
@@ -120,20 +120,23 @@ func (s *AnalyticsService) GetRecentOrders(limit int) ([]RecentOrder, error) {
 	var orders []domain.Order
 	var results []RecentOrder
 
-	config.DB.Preload("User").Preload("Items").
+	config.DB.Preload("Items").
 		Order("created_at DESC").
 		Limit(limit).
 		Find(&orders)
 
 	for _, order := range orders {
+		// Get user email
+		var user domain.User
 		email := ""
-		if order.User.Email != "" {
-			email = order.User.Email
+		if err := config.DB.First(&user, order.UserID).Error; err == nil {
+			email = user.Email
 		}
+
 		results = append(results, RecentOrder{
 			ID:        order.ID,
 			UserEmail: email,
-			Total:     order.TotalAmount,
+			Total:     order.Total,
 			ItemCount: len(order.Items),
 			Status:    order.Status,
 			CreatedAt: order.CreatedAt,
