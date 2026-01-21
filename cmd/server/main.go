@@ -118,6 +118,11 @@ func main() {
 		log.Println("Cloudinary not configured - image upload disabled")
 	}
 
+	// Initialize Analytics Handler
+	analyticsHandler := &handler.AnalyticsHandler{
+		Service: &service.AnalyticsService{},
+	}
+
 	// Swagger Route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
@@ -161,6 +166,13 @@ func main() {
 		if uploadHandler != nil {
 			protectedAdmin.POST("/upload", uploadHandler.UploadImage)
 		}
+
+		// Analytics Routes (Admin)
+		protectedAdmin.GET("/analytics/stats", analyticsHandler.GetDashboardStats)
+		protectedAdmin.GET("/analytics/sales-by-category", analyticsHandler.GetSalesByCategory)
+		protectedAdmin.GET("/analytics/top-products", analyticsHandler.GetTopProducts)
+		protectedAdmin.GET("/analytics/sales-by-day", analyticsHandler.GetSalesByDay)
+		protectedAdmin.GET("/analytics/recent-orders", analyticsHandler.GetRecentOrders)
 	}
 
 	// Protected Routes (User)
