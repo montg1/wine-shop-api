@@ -55,7 +55,7 @@ func (h *AnalyticsHandler) GetSalesByCategory(c *gin.Context) {
 // @Router       /admin/analytics/top-products [get]
 func (h *AnalyticsHandler) GetTopProducts(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "5"))
-	
+
 	data, err := h.Service.GetTopProducts(limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})
@@ -74,7 +74,7 @@ func (h *AnalyticsHandler) GetTopProducts(c *gin.Context) {
 // @Router       /admin/analytics/sales-by-day [get]
 func (h *AnalyticsHandler) GetSalesByDay(c *gin.Context) {
 	days, _ := strconv.Atoi(c.DefaultQuery("days", "30"))
-	
+
 	data, err := h.Service.GetSalesByDay(days)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})
@@ -93,7 +93,7 @@ func (h *AnalyticsHandler) GetSalesByDay(c *gin.Context) {
 // @Router       /admin/analytics/recent-orders [get]
 func (h *AnalyticsHandler) GetRecentOrders(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
-	
+
 	data, err := h.Service.GetRecentOrders(limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})

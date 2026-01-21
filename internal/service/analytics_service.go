@@ -41,12 +41,12 @@ type SalesByDay struct {
 
 // RecentOrder represents a recent order for the dashboard
 type RecentOrder struct {
-	ID         uint      `json:"id"`
-	UserEmail  string    `json:"user_email"`
-	Total      float64   `json:"total"`
-	ItemCount  int       `json:"item_count"`
-	Status     string    `json:"status"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID        uint      `json:"id"`
+	UserEmail string    `json:"user_email"`
+	Total     float64   `json:"total"`
+	ItemCount int       `json:"item_count"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 // GetDashboardStats returns overview statistics
