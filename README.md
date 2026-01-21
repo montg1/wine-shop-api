@@ -24,34 +24,7 @@ A full-stack e-commerce application for an online wine shop with AI-powered wine
 
 ## 🔄 CI/CD Pipeline
 
-```mermaid
-flowchart LR
-    A[👨‍💻 Developer] -->|git push| B[GitHub]
-    B -->|trigger| C[GitHub Actions]
-    
-    subgraph CI ["🔧 CI Pipeline"]
-        C --> D[Build & Test]
-        D --> E[Security Tests]
-        E --> F[Docker Build]
-    end
-    
-    subgraph CD ["🚀 CD Pipeline"]
-        F -->|auto-deploy| G[Render]
-        F -->|auto-deploy| H[Vercel]
-    end
-    
-    G -->|Go Backend| I[(PostgreSQL)]
-    H -->|Vue Frontend| J[🌐 Users]
-    G --> J
-
-    style A fill:#4CAF50
-    style B fill:#333
-    style C fill:#2088FF
-    style G fill:#46E3B7
-    style H fill:#000
-    style I fill:#336791
-    style J fill:#FF6B6B
-```
+![CI/CD Pipeline Flow](docs/images/ci_cd_pipeline.png)
 
 ### Pipeline Stages
 
@@ -59,6 +32,7 @@ flowchart LR
 |-------|-------------|
 | **Build & Test** | Go compilation, unit tests, code formatting |
 | **Integration Tests** | API tests with PostgreSQL service |
+| **Analytics Tests** | Validate dashboard endpoints and data format |
 | **Security Tests** | RBAC, Rate Limiting, JWT, SQL Injection checks |
 | **Docker Build** | Verify container builds correctly |
 | **Deploy Backend** | Auto-deploy to Render on push to `main` |
