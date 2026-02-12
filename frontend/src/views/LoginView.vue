@@ -1,24 +1,24 @@
 <template>
   <div class="auth-page">
     <div class="auth-card">
-      <h1>Welcome Back</h1>
-      <p class="subtitle">Sign in to your account</p>
+      <h1>{{ $t('auth.welcome_back') }}</h1>
+      <p class="subtitle">{{ $t('auth.sign_in_subtitle') }}</p>
       <form @submit.prevent="handleLogin">
         <div class="form-group">
-          <label>Email</label>
+          <label>{{ $t('auth.email') }}</label>
           <input v-model="email" type="email" placeholder="you@example.com" required />
         </div>
         <div class="form-group">
-          <label>Password</label>
+          <label>{{ $t('auth.password') }}</label>
           <input v-model="password" type="password" placeholder="••••••••" required />
         </div>
         <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
-          {{ loading ? 'Signing in...' : 'Sign In' }}
+          {{ loading ? $t('auth.signing_in') : $t('auth.sign_in') }}
         </button>
         <p v-if="error" class="error">{{ error }}</p>
       </form>
       <p class="switch-link">
-        New here? <router-link to="/register">Create an account</router-link>
+        {{ $t('auth.new_here') }} <router-link to="/register">{{ $t('auth.create_one') }}</router-link>
       </p>
     </div>
   </div>

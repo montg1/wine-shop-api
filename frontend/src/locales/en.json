@@ -1,0 +1,67 @@
+{
+  "nav": {
+    "home": "Home",
+    "wines": "Wines",
+    "cart": "Cart",
+    "orders": "Orders",
+    "admin": "Admin",
+    "login": "Login",
+    "logout": "Logout"
+  },
+  "home": {
+    "hero_title": "Curated Collection",
+    "hero_subtitle": "Discover exceptional wines from the world's finest vineyards",
+    "explore": "Explore Wines",
+    "featured": "The Art of Wine"
+  },
+  "products": {
+    "title": "Our Collection",
+    "subtitle": "Carefully selected wines from exceptional vineyards",
+    "all": "All",
+    "red": "Red",
+    "white": "White",
+    "rose": "Rosé",
+    "loading": "Loading wines...",
+    "empty": "No wines found",
+    "add_to_cart": "Add to Cart"
+  },
+  "auth": {
+    "welcome_back": "Welcome Back",
+    "sign_in_subtitle": "Sign in to your account",
+    "create_account": "Create Account",
+    "register_subtitle": "Join our community of wine lovers",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full Name",
+    "confirm_password": "Confirm Password",
+    "sign_in": "Sign In",
+    "signing_in": "Signing in...",
+    "register": "Register",
+    "registering": "Creating account...",
+    "new_here": "New here?",
+    "create_one": "Create an account",
+    "already_have_account": "Already have an account?",
+    "login_here": "Login here",
+    "error_login": "Invalid email or password",
+    "error_generic": "An error occurred"
+  },
+  "cart": {
+    "title": "Your Cart",
+    "loading": "Loading cart...",
+    "empty": "Your cart is empty",
+    "browse": "Browse Wines",
+    "items": "Items",
+    "total": "Total",
+    "checkout": "Checkout",
+    "processing": "Processing...",
+    "success": "Order placed successfully!",
+    "error": "Checkout failed"
+  },
+  "common": {
+    "price": "Price",
+    "add_to_cart": "Add to Cart",
+    "search": "Search wines...",
+    "loading": "Loading...",
+    "error": "Something went wrong"
+  }
+}

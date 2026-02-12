@@ -3,16 +3,16 @@
     <section class="hero">
       <div class="hero-overlay"></div>
       <div class="hero-content">
-        <span class="tagline">Curated Collection</span>
+        <span class="tagline">{{ $t('home.hero_title') }}</span>
         <h1>Wine Shop</h1>
-        <p>Discover exceptional wines from the world's finest vineyards</p>
-        <router-link to="/products" class="btn btn-primary">Explore Wines</router-link>
+        <p>{{ $t('home.hero_subtitle') }}</p>
+        <router-link to="/products" class="btn btn-primary">{{ $t('home.explore') }}</router-link>
       </div>
     </section>
 
     <section class="intro">
       <div class="intro-content">
-        <h2>The Art of Wine</h2>
+        <h2>{{ $t('home.featured') }}</h2>
         <p>Every bottle tells a story. From sun-drenched vineyards to your table, we bring you wines crafted with passion and tradition.</p>
       </div>
     </section>

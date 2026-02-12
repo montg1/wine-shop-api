@@ -1,29 +1,29 @@
 <template>
   <div class="auth-page">
     <div class="auth-card">
-      <h1>Create Account</h1>
-      <p class="subtitle">Join our wine community</p>
+      <h1>{{ $t('auth.create_account') }}</h1>
+      <p class="subtitle">{{ $t('auth.register_subtitle') }}</p>
       <form @submit.prevent="handleRegister">
         <div class="form-group">
-          <label>Email</label>
+          <label>{{ $t('auth.email') }}</label>
           <input v-model="email" type="email" placeholder="you@example.com" required />
         </div>
         <div class="form-group">
-          <label>Password</label>
+          <label>{{ $t('auth.password') }}</label>
           <input v-model="password" type="password" placeholder="••••••••" required />
         </div>
         <div class="form-group">
-          <label>Confirm Password</label>
+          <label>{{ $t('auth.confirm_password') }}</label>
           <input v-model="confirmPassword" type="password" placeholder="••••••••" required />
         </div>
         <button type="submit" class="btn btn-primary btn-block" :disabled="loading">
-          {{ loading ? 'Creating...' : 'Create Account' }}
+          {{ loading ? $t('auth.registering') : $t('auth.register') }}
         </button>
         <p v-if="error" class="error">{{ error }}</p>
         <p v-if="success" class="success">Account created! Redirecting to login...</p>
       </form>
       <p class="switch-link">
-        Already have an account? <router-link to="/login">Sign in</router-link>
+        {{ $t('auth.already_have_account') }} <router-link to="/login">{{ $t('auth.login_here') }}</router-link>
       </p>
     </div>
   </div>

@@ -1,0 +1,67 @@
+{
+    "nav": {
+        "home": "Accueil",
+        "wines": "Vins",
+        "cart": "Panier",
+        "orders": "Commandes",
+        "admin": "Admin",
+        "login": "Connexion",
+        "logout": "Déconnexion"
+    },
+    "home": {
+        "hero_title": "Collection Curée",
+        "hero_subtitle": "Découvrez des vins exceptionnels issus des meilleurs vignobles du monde",
+        "explore": "Explorer les Vins",
+        "featured": "L'Art du Vin"
+    },
+    "products": {
+        "title": "Notre Collection",
+        "subtitle": "Vins soigneusement sélectionnés de vignobles exceptionnels",
+        "all": "Tous",
+        "red": "Rouge",
+        "white": "Blanc",
+        "rose": "Rosé",
+        "loading": "Chargement des vins...",
+        "empty": "Aucun vin trouvé",
+        "add_to_cart": "Ajouter au Panier"
+    },
+    "auth": {
+        "welcome_back": "Bon retour",
+        "sign_in_subtitle": "Connectez-vous à votre compte",
+        "create_account": "Créer un Compte",
+        "register_subtitle": "Rejoignez notre communauté d'amateurs de vin",
+        "email": "Email",
+        "password": "Mot de passe",
+        "name": "Nom Complet",
+        "confirm_password": "Confirmer le mot de passe",
+        "sign_in": "Se Connecter",
+        "signing_in": "Connexion en cours...",
+        "register": "S'inscrire",
+        "registering": "Création du compte...",
+        "new_here": "Nouveau ici ?",
+        "create_one": "Créer un compte",
+        "already_have_account": "Déjà un compte ?",
+        "login_here": "Connectez-vous ici",
+        "error_login": "Email ou mot de passe invalide",
+        "error_generic": "Une erreur est survenue"
+    },
+    "cart": {
+        "title": "Votre Panier",
+        "loading": "Chargement du panier...",
+        "empty": "Votre panier est vide",
+        "browse": "Explorer les Vins",
+        "items": "Articles",
+        "total": "Total",
+        "checkout": "Payer",
+        "processing": "Traitement...",
+        "success": "Commande passée avec succès !",
+        "error": "Échec du paiement"
+    },
+    "common": {
+        "price": "Prix",
+        "add_to_cart": "Ajouter au Panier",
+        "search": "Rechercher des vins...",
+        "loading": "Chargement...",
+        "error": "Une erreur est survenue"
+    }
+}

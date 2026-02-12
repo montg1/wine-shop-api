@@ -1,0 +1,67 @@
+{
+    "nav": {
+        "home": "Inicio",
+        "wines": "Vinos",
+        "cart": "Carrito",
+        "orders": "Pedidos",
+        "admin": "Administrador",
+        "login": "Iniciar Sesión",
+        "logout": "Cerrar Sesión"
+    },
+    "home": {
+        "hero_title": "Colección Curada",
+        "hero_subtitle": "Descubre vinos excepcionales de los mejores viñedos del mundo",
+        "explore": "Explorar Vinos",
+        "featured": "El Arte del Vino"
+    },
+    "products": {
+        "title": "Nuestra Colección",
+        "subtitle": "Vinos cuidadosamente seleccionados de viñedos excepcionales",
+        "all": "Todos",
+        "red": "Tinto",
+        "white": "Blanco",
+        "rose": "Rosado",
+        "loading": "Cargando vinos...",
+        "empty": "No se encontraron vinos",
+        "add_to_cart": "Añadir al Carrito"
+    },
+    "auth": {
+        "welcome_back": "Bienvenido de Nuevo",
+        "sign_in_subtitle": "Inicia sesión en tu cuenta",
+        "create_account": "Crear Cuenta",
+        "register_subtitle": "Únete a nuestra comunidad de amantes del vino",
+        "email": "Correo Electrónico",
+        "password": "Contraseña",
+        "name": "Nombre Completo",
+        "confirm_password": "Confirmar Contraseña",
+        "sign_in": "Iniciar Sesión",
+        "signing_in": "Iniciando sesión...",
+        "register": "Registrarse",
+        "registering": "Creando cuenta...",
+        "new_here": "¿Nuevo aquí?",
+        "create_one": "Crear una cuenta",
+        "already_have_account": "¿Ya tienes una cuenta?",
+        "login_here": "Inicia sesión aquí",
+        "error_login": "Correo o contraseña inválidos",
+        "error_generic": "Ocurrió un error"
+    },
+    "cart": {
+        "title": "Tu Carrito",
+        "loading": "Cargando carrito...",
+        "empty": "Tu carrito está vacío",
+        "browse": "Explorar Vinos",
+        "items": "Artículos",
+        "total": "Total",
+        "checkout": "Pagar",
+        "processing": "Procesando...",
+        "success": "¡Pedido realizado con éxito!",
+        "error": "Fallo en el pago"
+    },
+    "common": {
+        "price": "Precio",
+        "add_to_cart": "Añadir al Carrito",
+        "search": "Buscar vinos...",
+        "loading": "Cargando...",
+        "error": "Algo salió mal"
+    }
+}
