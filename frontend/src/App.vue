@@ -6,18 +6,21 @@
         Wine Shop
       </router-link>
       <nav class="nav-links">
-        <router-link to="/products">Wines</router-link>
+        <router-link to="/products">{{ $t('nav.wines') }}</router-link>
         <router-link v-if="authStore.isLoggedIn" to="/cart" class="cart-link">
           🛒 <span v-if="cartStore.totalItems" class="badge">{{ cartStore.totalItems }}</span>
         </router-link>
-        <router-link v-if="authStore.isLoggedIn" to="/orders">Orders</router-link>
+        <router-link v-if="authStore.isLoggedIn" to="/orders">{{ $t('nav.orders') }}</router-link>
         <!-- Admin link only visible to admin users -->
-        <router-link v-if="authStore.isAdmin" to="/admin" class="admin-link">⚙️ Admin</router-link>
+        <router-link v-if="authStore.isAdmin" to="/admin" class="admin-link">⚙️ {{ $t('nav.admin') }}</router-link>
+        
+        <LanguageSwitcher />
+        
         <template v-if="authStore.isLoggedIn">
-          <button @click="handleLogout" class="btn-link">Logout</button>
+          <button @click="handleLogout" class="btn-link">{{ $t('nav.logout') }}</button>
         </template>
         <template v-else>
-          <router-link to="/login">Login</router-link>
+          <router-link to="/login">{{ $t('nav.login') }}</router-link>
         </template>
       </nav>
     </header>
@@ -41,6 +44,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useCartStore } from './stores/cart'
 import ChatbotWidget from './components/ChatbotWidget.vue'
+import LanguageSwitcher from './components/LanguageSwitcher.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

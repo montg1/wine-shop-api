@@ -1,12 +1,12 @@
 <template>
   <div class="cart-page">
-    <h1>🛒 Your Cart</h1>
+    <h1>🛒 {{ $t('cart.title') }}</h1>
     
-    <div v-if="cartStore.loading" class="loading">Loading cart...</div>
+    <div v-if="cartStore.loading" class="loading">{{ $t('cart.loading') }}</div>
     
     <div v-else-if="cartStore.items.length === 0" class="empty-cart">
-      <p>Your cart is empty</p>
-      <router-link to="/products" class="btn btn-primary">Browse Wines</router-link>
+      <p>{{ $t('cart.empty') }}</p>
+      <router-link to="/products" class="btn btn-primary">{{ $t('cart.browse') }}</router-link>
     </div>
     
     <div v-else class="cart-content">
@@ -25,15 +25,15 @@
       
       <div class="cart-summary">
         <div class="summary-row">
-          <span>Items:</span>
+          <span>{{ $t('cart.items') }}:</span>
           <span>{{ cartStore.totalItems }}</span>
         </div>
         <div class="summary-row total">
-          <span>Total:</span>
+          <span>{{ $t('cart.total') }}:</span>
           <span>${{ cartStore.totalPrice.toFixed(2) }}</span>
         </div>
         <button class="btn btn-primary btn-block" @click="handleCheckout" :disabled="checkingOut">
-          {{ checkingOut ? 'Processing...' : 'Checkout' }}
+          {{ checkingOut ? $t('cart.processing') : $t('cart.checkout') }}
         </button>
       </div>
     </div>
@@ -44,10 +44,12 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
+import { useI18n } from 'vue-i18n'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const checkingOut = ref(false)
+const { t } = useI18n()
 
 onMounted(() => {
   cartStore.fetchCart()
@@ -57,10 +59,10 @@ const handleCheckout = async () => {
   checkingOut.value = true
   try {
     await cartStore.checkout()
-    alert('Order placed successfully!')
+    alert(t('cart.success'))
     router.push('/orders')
   } catch (error) {
-    alert('Checkout failed: ' + (error.response?.data?.error || 'Unknown error'))
+    alert(t('cart.error') + ': ' + (error.response?.data?.error || t('common.error')))
   } finally {
     checkingOut.value = false
   }

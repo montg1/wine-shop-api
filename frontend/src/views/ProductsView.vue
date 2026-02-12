@@ -1,8 +1,8 @@
 <template>
   <div class="products-page">
     <div class="page-header">
-      <h1>Our Collection</h1>
-      <p>Carefully selected wines from exceptional vineyards</p>
+      <h1>{{ $t('products.title') }}</h1>
+      <p>{{ $t('products.subtitle') }}</p>
     </div>
     
     <!-- Search and Filter -->
@@ -11,7 +11,7 @@
         <input 
           v-model="searchQuery" 
           type="text" 
-          placeholder="Search wines..." 
+          :placeholder="$t('common.search')" 
           @input="handleSearch"
         />
       </div>
@@ -20,30 +20,30 @@
           :class="{ active: selectedCategory === '' }" 
           @click="filterByCategory('')"
         >
-          All
+          {{ $t('products.all') }}
         </button>
         <button 
           :class="{ active: selectedCategory === 'Red' }" 
           @click="filterByCategory('Red')"
         >
-          Red
+          {{ $t('products.red') }}
         </button>
         <button 
           :class="{ active: selectedCategory === 'White' }" 
           @click="filterByCategory('White')"
         >
-          White
+          {{ $t('products.white') }}
         </button>
         <button 
           :class="{ active: selectedCategory === 'Rosé' }" 
           @click="filterByCategory('Rosé')"
         >
-          Rosé
+          {{ $t('products.rose') }}
         </button>
       </div>
     </div>
     
-    <div v-if="productStore.loading" class="loading">Loading wines...</div>
+    <div v-if="productStore.loading" class="loading">{{ $t('products.loading') }}</div>
     
     <div v-else class="products-grid">
       <div 
@@ -63,14 +63,14 @@
             class="btn btn-outline" 
             @click.stop="addToCart(product.ID)"
           >
-            Add to Cart
+            {{ $t('products.add_to_cart') }}
           </button>
         </div>
       </div>
     </div>
     
     <div v-if="productStore.products.length === 0 && !productStore.loading" class="empty">
-      <p>No wines found{{ searchQuery ? ' for "' + searchQuery + '"' : '' }}.</p>
+      <p>{{ $t('products.empty') }}{{ searchQuery ? ' "' + searchQuery + '"' : '' }}.</p>
     </div>
   </div>
 </template>
