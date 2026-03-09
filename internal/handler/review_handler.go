@@ -8,6 +8,7 @@ import (
 
 	"wine-shop-api/internal/domain"
 	"wine-shop-api/internal/service"
+	"wine-shop-api/pkg/logger"
 	"wine-shop-api/pkg/utils"
 )
 
@@ -46,7 +47,7 @@ func (h *ReviewHandler) CreateReview(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid review data"})
 		return
 	}
 
@@ -59,7 +60,8 @@ func (h *ReviewHandler) CreateReview(c *gin.Context) {
 
 	createdReview, err := h.Service.CreateReview(review)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		logger.Log.Warn().Err(err).Uint("user_id", userID).Int("product_id", productID).Msg("Failed to create review")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create review"})
 		return
 	}
 
@@ -84,7 +86,8 @@ func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 
 	reviews, err := h.Service.GetProductReviews(uint(productID))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Int("product_id", productID).Msg("Failed to get reviews")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -123,7 +126,8 @@ func (h *ReviewHandler) DeleteReview(c *gin.Context) {
 	}
 
 	if err := h.Service.DeleteReview(uint(reviewID), userID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		logger.Log.Warn().Err(err).Uint("user_id", userID).Int("review_id", reviewID).Msg("Failed to delete review")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to delete review"})
 		return
 	}
 

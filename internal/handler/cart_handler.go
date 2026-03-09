@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"wine-shop-api/internal/service"
+	"wine-shop-api/pkg/logger"
 	"wine-shop-api/pkg/utils"
 )
 
@@ -39,12 +40,13 @@ func (h *CartHandler) AddToCart(c *gin.Context) {
 
 	var input AddToCartInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid cart item data"})
 		return
 	}
 
 	if err := h.Service.AddToCart(userID, input.ProductID, input.Quantity); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Uint("user_id", userID).Msg("Failed to add to cart")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to add item to cart"})
 		return
 	}
 
@@ -71,7 +73,8 @@ func (h *CartHandler) GetCart(c *gin.Context) {
 
 	cart, err := h.Service.GetCart(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Uint("user_id", userID).Msg("Failed to get cart")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 

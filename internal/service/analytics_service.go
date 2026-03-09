@@ -3,11 +3,16 @@ package service
 import (
 	"time"
 
-	"wine-shop-api/internal/domain"
-	"wine-shop-api/pkg/config"
+	"wine-shop-api/internal/repository"
 )
 
-type AnalyticsService struct{}
+type AnalyticsService struct {
+	Repo repository.AnalyticsRepository
+}
+
+func NewAnalyticsService(repo repository.AnalyticsRepository) *AnalyticsService {
+	return &AnalyticsService{Repo: repo}
+}
 
 // DashboardStats contains overview statistics
 type DashboardStats struct {
@@ -15,28 +20,6 @@ type DashboardStats struct {
 	TotalOrders    int64   `json:"total_orders"`
 	TotalProducts  int64   `json:"total_products"`
 	TotalCustomers int64   `json:"total_customers"`
-}
-
-// SalesByCategory represents sales grouped by wine category
-type SalesByCategory struct {
-	Category string  `json:"category"`
-	Revenue  float64 `json:"revenue"`
-	Count    int64   `json:"count"`
-}
-
-// TopProduct represents a top-selling product
-type TopProduct struct {
-	ID       uint    `json:"id"`
-	Name     string  `json:"name"`
-	Quantity int     `json:"quantity"`
-	Revenue  float64 `json:"revenue"`
-}
-
-// SalesByDay represents daily sales data
-type SalesByDay struct {
-	Date    string  `json:"date"`
-	Revenue float64 `json:"revenue"`
-	Orders  int64   `json:"orders"`
 }
 
 // RecentOrder represents a recent order for the dashboard
@@ -53,98 +36,69 @@ type RecentOrder struct {
 func (s *AnalyticsService) GetDashboardStats() (*DashboardStats, error) {
 	var stats DashboardStats
 
-	// Total revenue from orders
-	config.DB.Model(&domain.Order{}).
-		Select("COALESCE(SUM(total), 0)").
-		Scan(&stats.TotalRevenue)
+	revenue, err := s.Repo.GetTotalRevenue()
+	if err != nil {
+		return nil, err
+	}
+	stats.TotalRevenue = revenue
 
-	// Total orders
-	config.DB.Model(&domain.Order{}).Count(&stats.TotalOrders)
+	orders, err := s.Repo.GetTotalOrders()
+	if err != nil {
+		return nil, err
+	}
+	stats.TotalOrders = orders
 
-	// Total products
-	config.DB.Model(&domain.Product{}).Count(&stats.TotalProducts)
+	products, err := s.Repo.GetTotalProducts()
+	if err != nil {
+		return nil, err
+	}
+	stats.TotalProducts = products
 
-	// Total customers
-	config.DB.Model(&domain.User{}).Where("role = ?", "customer").Count(&stats.TotalCustomers)
+	customers, err := s.Repo.GetTotalCustomers()
+	if err != nil {
+		return nil, err
+	}
+	stats.TotalCustomers = customers
 
 	return &stats, nil
 }
 
 // GetSalesByCategory returns sales grouped by wine category
-func (s *AnalyticsService) GetSalesByCategory() ([]SalesByCategory, error) {
-	var results []SalesByCategory
-
-	config.DB.Table("order_items").
-		Select("products.category, SUM(order_items.price * order_items.quantity) as revenue, COUNT(*) as count").
-		Joins("JOIN products ON products.id = order_items.product_id").
-		Group("products.category").
-		Order("revenue DESC").
-		Scan(&results)
-
-	return results, nil
+func (s *AnalyticsService) GetSalesByCategory() ([]repository.SalesByCategory, error) {
+	return s.Repo.GetSalesByCategory()
 }
 
 // GetTopProducts returns top selling products
-func (s *AnalyticsService) GetTopProducts(limit int) ([]TopProduct, error) {
-	var results []TopProduct
-
-	config.DB.Table("order_items").
-		Select("products.id, products.name, SUM(order_items.quantity) as quantity, SUM(order_items.price * order_items.quantity) as revenue").
-		Joins("JOIN products ON products.id = order_items.product_id").
-		Group("products.id, products.name").
-		Order("quantity DESC").
-		Limit(limit).
-		Scan(&results)
-
-	return results, nil
+func (s *AnalyticsService) GetTopProducts(limit int) ([]repository.TopProduct, error) {
+	return s.Repo.GetTopProducts(limit)
 }
 
 // GetSalesByDay returns daily sales for the last N days
-func (s *AnalyticsService) GetSalesByDay(days int) ([]SalesByDay, error) {
-	// Initialize as empty slice to return [] instead of null in JSON
-	results := []SalesByDay{}
-
-	startDate := time.Now().AddDate(0, 0, -days)
-
-	err := config.DB.Table("orders").
-		Select("TO_CHAR(created_at, 'YYYY-MM-DD') as date, COALESCE(SUM(total), 0) as revenue, COUNT(*) as orders").
-		Where("created_at >= ?", startDate).
-		Group("TO_CHAR(created_at, 'YYYY-MM-DD')").
-		Order("date ASC").
-		Scan(&results).Error
-
-	if err != nil {
-		return []SalesByDay{}, err
-	}
-
-	return results, nil
+func (s *AnalyticsService) GetSalesByDay(days int) ([]repository.SalesByDay, error) {
+	return s.Repo.GetSalesByDay(days)
 }
 
 // GetRecentOrders returns the most recent orders
 func (s *AnalyticsService) GetRecentOrders(limit int) ([]RecentOrder, error) {
-	var orders []domain.Order
+	rows, err := s.Repo.GetRecentOrders(limit)
+	if err != nil {
+		return nil, err
+	}
+
 	var results []RecentOrder
-
-	config.DB.Preload("Items").
-		Order("created_at DESC").
-		Limit(limit).
-		Find(&orders)
-
-	for _, order := range orders {
-		// Get user email
-		var user domain.User
-		email := ""
-		if err := config.DB.First(&user, order.UserID).Error; err == nil {
-			email = user.Email
+	for _, row := range rows {
+		var createdAt time.Time
+		if t, ok := row.CreatedAt.(time.Time); ok {
+			createdAt = t
 		}
 
 		results = append(results, RecentOrder{
-			ID:        order.ID,
-			UserEmail: email,
-			Total:     order.Total,
-			ItemCount: len(order.Items),
-			Status:    order.Status,
-			CreatedAt: order.CreatedAt,
+			ID:        row.ID,
+			UserEmail: row.Email,
+			Total:     row.Total,
+			ItemCount: row.ItemCount,
+			Status:    row.Status,
+			CreatedAt: createdAt,
 		})
 	}
 

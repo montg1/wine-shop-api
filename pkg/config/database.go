@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,20 +9,25 @@ import (
 
 var DB *gorm.DB
 
-func ConnectDatabase() {
+// ConnectDatabase initializes a database connection using the provided AppConfig.
+// Returns an error instead of panicking.
+func ConnectDatabase(cfg *AppConfig) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=Asia/Shanghai",
+		cfg.DBHost,
+		cfg.DBUser,
+		cfg.DBPassword,
+		cfg.DBName,
+		cfg.DBPort,
+		cfg.DBSSLMode,
 	)
 
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic("Failed to connect to database!")
+		return nil, fmt.Errorf("failed to connect to database: %w", err)
 	}
 
+	// Keep global reference for backward compatibility (AutoMigrate, etc.)
 	DB = database
+	return database, nil
 }

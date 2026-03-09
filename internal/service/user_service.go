@@ -9,16 +9,21 @@ import (
 	"gorm.io/gorm"
 
 	"wine-shop-api/internal/domain"
-	"wine-shop-api/pkg/config"
+	"wine-shop-api/internal/repository"
 	"wine-shop-api/pkg/utils"
 )
 
-type UserService struct{}
+type UserService struct {
+	Repo repository.UserRepository
+}
+
+func NewUserService(repo repository.UserRepository) *UserService {
+	return &UserService{Repo: repo}
+}
 
 func (s *UserService) Register(user *domain.User) (*domain.User, error) {
 	// 1. Check if email exists
-	var existingUser domain.User
-	if err := config.DB.Where("email = ?", user.Email).First(&existingUser).Error; err == nil {
+	if _, err := s.Repo.FindByEmail(user.Email); err == nil {
 		return nil, errors.New("email already in use")
 	}
 
@@ -31,7 +36,7 @@ func (s *UserService) Register(user *domain.User) (*domain.User, error) {
 	user.Email = html.EscapeString(strings.TrimSpace(user.Email))
 
 	// 3. Create User
-	if err := config.DB.Create(&user).Error; err != nil {
+	if err := s.Repo.Create(user); err != nil {
 		return nil, err
 	}
 
@@ -41,10 +46,9 @@ func (s *UserService) Register(user *domain.User) (*domain.User, error) {
 }
 
 func (s *UserService) Login(email, password string) (string, error) {
-	var user domain.User
-
 	// 1. Find User
-	if err := config.DB.Where("email = ?", email).First(&user).Error; err != nil {
+	user, err := s.Repo.FindByEmail(email)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return "", errors.New("invalid email or password")
 		}
@@ -52,7 +56,7 @@ func (s *UserService) Login(email, password string) (string, error) {
 	}
 
 	// 2. Verify Password
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return "", errors.New("invalid email or password")
 	}
@@ -68,19 +72,19 @@ func (s *UserService) Login(email, password string) (string, error) {
 
 // PromoteToAdmin promotes a user to admin role
 func (s *UserService) PromoteToAdmin(userID uint) error {
-	var user domain.User
-	if err := config.DB.First(&user, userID).Error; err != nil {
+	user, err := s.Repo.FindByID(userID)
+	if err != nil {
 		return errors.New("user not found")
 	}
 	user.Role = "admin"
-	return config.DB.Save(&user).Error
+	return s.Repo.Save(user)
 }
 
 // GetUserByID returns a user by ID
 func (s *UserService) GetUserByID(userID uint) (*domain.User, error) {
-	var user domain.User
-	if err := config.DB.First(&user, userID).Error; err != nil {
+	user, err := s.Repo.FindByID(userID)
+	if err != nil {
 		return nil, errors.New("user not found")
 	}
-	return &user, nil
+	return user, nil
 }

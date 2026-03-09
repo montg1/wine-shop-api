@@ -8,6 +8,7 @@ import (
 
 	"wine-shop-api/internal/domain"
 	"wine-shop-api/internal/service"
+	"wine-shop-api/pkg/logger"
 )
 
 type ProductHandler struct {
@@ -29,13 +30,14 @@ type ProductHandler struct {
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	var product domain.Product
 	if err := c.ShouldBindJSON(&product); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product data"})
 		return
 	}
 
 	createdProduct, err := h.Service.CreateProduct(&product)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Msg("Failed to create product")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -63,7 +65,8 @@ func (h *ProductHandler) GetAllProducts(c *gin.Context) {
 
 	products, total, err := h.Service.GetAllProducts(page, limit, search, category)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Msg("Failed to fetch products")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 
@@ -127,13 +130,13 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 
 	var input domain.Product
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product data"})
 		return
 	}
 
 	updatedProduct, err := h.Service.UpdateProduct(uint(id), &input)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
 
@@ -160,7 +163,8 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	}
 
 	if err := h.Service.DeleteProduct(uint(id)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Uint("product_id", uint(id)).Msg("Failed to delete product")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 

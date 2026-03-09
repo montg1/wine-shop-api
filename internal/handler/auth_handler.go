@@ -7,6 +7,7 @@ import (
 
 	"wine-shop-api/internal/domain"
 	"wine-shop-api/internal/service"
+	"wine-shop-api/pkg/logger"
 )
 
 type AuthHandler struct {
@@ -36,7 +37,7 @@ type LoginInput struct {
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
 		return
 	}
 
@@ -47,7 +48,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	user, err := h.Service.Register(&u)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		logger.Log.Warn().Err(err).Str("email", input.Email).Msg("Registration failed")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Registration failed. Email may already be in use."})
 		return
 	}
 
@@ -67,12 +69,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 func (h *AuthHandler) Login(c *gin.Context) {
 	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data"})
 		return
 	}
 
 	token, err := h.Service.Login(input.Email, input.Password)
 	if err != nil {
+		logger.Log.Warn().Str("email", input.Email).Msg("Login attempt failed")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email or password"})
 		return
 	}

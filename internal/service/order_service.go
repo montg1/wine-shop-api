@@ -4,13 +4,16 @@ import (
 	"errors"
 
 	"wine-shop-api/internal/domain"
-	"wine-shop-api/pkg/config"
-
-	"gorm.io/gorm"
+	"wine-shop-api/internal/repository"
 )
 
 type OrderService struct {
+	Repo        repository.OrderRepository
 	CartService *CartService
+}
+
+func NewOrderService(repo repository.OrderRepository, cartService *CartService) *OrderService {
+	return &OrderService{Repo: repo, CartService: cartService}
 }
 
 func (s *OrderService) CreateOrder(userID uint) (*domain.Order, error) {
@@ -33,7 +36,7 @@ func (s *OrderService) CreateOrder(userID uint) (*domain.Order, error) {
 		orderItems = append(orderItems, domain.OrderItem{
 			ProductID: item.ProductID,
 			Quantity:  item.Quantity,
-			Price:     item.Product.Price, // Snapshot price at purchase time
+			Price:     item.Product.Price,
 		})
 	}
 
@@ -41,11 +44,11 @@ func (s *OrderService) CreateOrder(userID uint) (*domain.Order, error) {
 	order := domain.Order{
 		UserID: userID,
 		Total:  total,
-		Status: "Paid", // Simplified for this demo
+		Status: "Paid",
 		Items:  orderItems,
 	}
 
-	tx := config.DB.Begin()
+	tx := s.Repo.BeginTx()
 
 	if err := tx.Create(&order).Error; err != nil {
 		tx.Rollback()
@@ -53,14 +56,14 @@ func (s *OrderService) CreateOrder(userID uint) (*domain.Order, error) {
 	}
 
 	// 4. Clear Cart
-	if err := tx.Where("cart_id = ?", cart.ID).Delete(&domain.CartItem{}).Error; err != nil {
+	if err := s.Repo.DeleteCartItemsInTx(tx, cart.ID); err != nil {
 		tx.Rollback()
 		return nil, err
 	}
 
-	// 5. Update Stock (Optional but good practice)
+	// 5. Update Stock
 	for _, item := range cart.Items {
-		if err := tx.Model(&domain.Product{}).Where("id = ?", item.ProductID).UpdateColumn("stock", gorm.Expr("stock - ?", item.Quantity)).Error; err != nil {
+		if err := s.Repo.UpdateStockInTx(tx, item.ProductID, item.Quantity); err != nil {
 			tx.Rollback()
 			return nil, err
 		}
@@ -72,9 +75,5 @@ func (s *OrderService) CreateOrder(userID uint) (*domain.Order, error) {
 }
 
 func (s *OrderService) GetOrders(userID uint) ([]domain.Order, error) {
-	var orders []domain.Order
-	if err := config.DB.Preload("Items.Product").Where("user_id = ?", userID).Order("created_at desc").Find(&orders).Error; err != nil {
-		return nil, err
-	}
-	return orders, nil
+	return s.Repo.FindByUserID(userID)
 }

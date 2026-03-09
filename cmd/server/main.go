@@ -1,15 +1,17 @@
 package main
 
 import (
-	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"wine-shop-api/internal/domain"
 	"wine-shop-api/internal/handler"
 	"wine-shop-api/internal/middleware"
+	"wine-shop-api/internal/repository"
 	"wine-shop-api/internal/service"
 	"wine-shop-api/pkg/config"
+	"wine-shop-api/pkg/logger"
 	"wine-shop-api/pkg/utils"
 
 	"github.com/gin-contrib/cors"
@@ -41,16 +43,32 @@ import (
 // @name Authorization
 
 func main() {
-	// Load .env
+	// Load .env (optional — won't fail if missing in production)
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found")
+		// Will use structured logger once initialized
 	}
 
+	// Load and validate configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		// Logger not initialized yet, use stderr
+		_, _ = os.Stderr.WriteString("FATAL: Configuration error: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	// Initialize structured logger
+	logger.Init(cfg.GinMode)
+	logger.Log.Info().Msg("Starting Wine Shop API")
+
 	// Connect to Database
-	config.ConnectDatabase()
+	db, err := config.ConnectDatabase(cfg)
+	if err != nil {
+		logger.Log.Fatal().Err(err).Msg("Failed to connect to database")
+	}
+	logger.Log.Info().Msg("Database connected successfully")
 
 	// Auto Migrate
-	err := config.DB.AutoMigrate(
+	if err := db.AutoMigrate(
 		&domain.User{},
 		&domain.Product{},
 		&domain.Cart{},
@@ -58,9 +76,44 @@ func main() {
 		&domain.Order{},
 		&domain.OrderItem{},
 		&domain.Review{},
-	)
-	if err != nil {
-		log.Fatal("Failed to migrate database: ", err)
+	); err != nil {
+		logger.Log.Fatal().Err(err).Msg("Failed to migrate database")
+	}
+
+	// ──────────── Repository Layer ────────────
+	userRepo := repository.NewUserRepository(db)
+	productRepo := repository.NewProductRepository(db)
+	cartRepo := repository.NewCartRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
+	reviewRepo := repository.NewReviewRepository(db)
+	analyticsRepo := repository.NewAnalyticsRepository(db)
+
+	// ──────────── Service Layer ────────────
+	userService := service.NewUserService(userRepo)
+	productService := service.NewProductService(productRepo)
+	cartService := service.NewCartService(cartRepo, productRepo)
+	orderService := service.NewOrderService(orderRepo, cartService)
+	reviewService := service.NewReviewService(reviewRepo)
+	analyticsService := service.NewAnalyticsService(analyticsRepo)
+
+	// ──────────── Handler Layer ────────────
+	authHandler := &handler.AuthHandler{Service: userService}
+	productHandler := &handler.ProductHandler{Service: productService}
+	cartHandler := &handler.CartHandler{Service: cartService}
+	orderHandler := &handler.OrderHandler{Service: orderService}
+	reviewHandler := &handler.ReviewHandler{Service: reviewService}
+	analyticsHandler := &handler.AnalyticsHandler{Service: analyticsService}
+
+	// Initialize Cloudinary Service (optional)
+	var uploadHandler *handler.UploadHandler
+	cloudinaryService, err := service.NewCloudinaryService()
+	if err == nil {
+		uploadHandler = &handler.UploadHandler{
+			CloudinaryService: cloudinaryService,
+		}
+		logger.Log.Info().Msg("Cloudinary service initialized")
+	} else {
+		logger.Log.Warn().Msg("Cloudinary not configured — image upload disabled")
 	}
 
 	// Initialize Gin engine
@@ -73,7 +126,6 @@ func main() {
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
-			// Allow any Vercel preview or production domain
 			return true
 		},
 	}))
@@ -81,47 +133,9 @@ func main() {
 	// Global Middleware
 	r.Use(gin.Recovery())
 
-	// Rate Limiter: 100 requests per minute for general routes
+	// Rate Limiters
 	generalLimiter := middleware.NewRateLimiter(100, time.Minute)
-	// Rate Limiter: 10 requests per minute for auth routes (prevent brute force)
 	authLimiter := middleware.NewRateLimiter(10, time.Minute)
-
-	// Initialize Handlers
-	authHandler := &handler.AuthHandler{
-		Service: &service.UserService{},
-	}
-	productHandler := &handler.ProductHandler{
-		Service: &service.ProductService{},
-	}
-	cartService := &service.CartService{}
-	cartHandler := &handler.CartHandler{
-		Service: cartService,
-	}
-	orderHandler := &handler.OrderHandler{
-		Service: &service.OrderService{
-			CartService: cartService,
-		},
-	}
-	reviewHandler := &handler.ReviewHandler{
-		Service: &service.ReviewService{},
-	}
-
-	// Initialize Cloudinary Service (optional - if env vars not set, skip)
-	var uploadHandler *handler.UploadHandler
-	cloudinaryService, err := service.NewCloudinaryService()
-	if err == nil {
-		uploadHandler = &handler.UploadHandler{
-			CloudinaryService: cloudinaryService,
-		}
-		log.Println("Cloudinary service initialized")
-	} else {
-		log.Println("Cloudinary not configured - image upload disabled")
-	}
-
-	// Initialize Analytics Handler
-	analyticsHandler := &handler.AnalyticsHandler{
-		Service: &service.AnalyticsService{},
-	}
 
 	// Swagger Route
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -130,7 +144,6 @@ func main() {
 	public := r.Group("/api")
 	public.Use(middleware.RateLimitMiddleware(generalLimiter))
 	{
-		// Auth Routes with stricter rate limit
 		public.POST("/register", middleware.RateLimitMiddleware(authLimiter), authHandler.Register)
 		public.POST("/login", middleware.RateLimitMiddleware(authLimiter), authHandler.Login)
 		public.GET("/health", func(c *gin.Context) {
@@ -140,15 +153,12 @@ func main() {
 			})
 		})
 
-		// Product Routes (Public)
 		public.GET("/products", productHandler.GetAllProducts)
 		public.GET("/products/:id", productHandler.GetProduct)
-
-		// Review Routes (Public - Read)
 		public.GET("/products/:id/reviews", reviewHandler.GetProductReviews)
 	}
 
-	// Protected Routes (Admin) - Requires admin role
+	// Protected Routes (Admin)
 	protectedAdmin := r.Group("/api/admin")
 	protectedAdmin.Use(middleware.AdminMiddleware())
 	{
@@ -157,17 +167,14 @@ func main() {
 			c.JSON(http.StatusOK, gin.H{"message": "Admin access granted", "user_id": userID})
 		})
 
-		// Product Routes (Admin)
 		protectedAdmin.POST("/products", productHandler.CreateProduct)
 		protectedAdmin.PUT("/products/:id", productHandler.UpdateProduct)
 		protectedAdmin.DELETE("/products/:id", productHandler.DeleteProduct)
 
-		// Image Upload Route (Admin)
 		if uploadHandler != nil {
 			protectedAdmin.POST("/upload", uploadHandler.UploadImage)
 		}
 
-		// Analytics Routes (Admin)
 		protectedAdmin.GET("/analytics/stats", analyticsHandler.GetDashboardStats)
 		protectedAdmin.GET("/analytics/sales-by-category", analyticsHandler.GetSalesByCategory)
 		protectedAdmin.GET("/analytics/top-products", analyticsHandler.GetTopProducts)
@@ -179,24 +186,18 @@ func main() {
 	protectedUser := r.Group("/api")
 	protectedUser.Use(middleware.JwtAuthMiddleware())
 	{
-		// User Info Route
 		protectedUser.GET("/me", authHandler.GetMe)
-
-		// Cart Routes
 		protectedUser.POST("/cart", cartHandler.AddToCart)
 		protectedUser.GET("/cart", cartHandler.GetCart)
-
-		// Order Routes
 		protectedUser.POST("/orders", orderHandler.CreateOrder)
 		protectedUser.GET("/orders", orderHandler.GetOrders)
-
-		// Review Routes (Protected - Write)
 		protectedUser.POST("/products/:id/reviews", reviewHandler.CreateReview)
 		protectedUser.DELETE("/products/:id/reviews/:reviewId", reviewHandler.DeleteReview)
 	}
 
 	// Start server
-	if err := r.Run(":8080"); err != nil {
-		panic(err)
+	logger.Log.Info().Str("port", cfg.Port).Msg("Server starting")
+	if err := r.Run(":" + cfg.Port); err != nil {
+		logger.Log.Fatal().Err(err).Msg("Server failed to start")
 	}
 }

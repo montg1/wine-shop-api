@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"wine-shop-api/internal/service"
+	"wine-shop-api/pkg/logger"
 	"wine-shop-api/pkg/utils"
 )
 
@@ -33,7 +34,8 @@ func (h *OrderHandler) CreateOrder(c *gin.Context) {
 
 	order, err := h.Service.CreateOrder(userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Uint("user_id", userID).Msg("Failed to create order")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to place order"})
 		return
 	}
 
@@ -60,7 +62,8 @@ func (h *OrderHandler) GetOrders(c *gin.Context) {
 
 	orders, err := h.Service.GetOrders(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		logger.Log.Error().Err(err).Uint("user_id", userID).Msg("Failed to get orders")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 

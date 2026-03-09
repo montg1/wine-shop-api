@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"wine-shop-api/internal/service"
+	"wine-shop-api/pkg/logger"
 )
 
 type AnalyticsHandler struct {
@@ -23,7 +24,8 @@ type AnalyticsHandler struct {
 func (h *AnalyticsHandler) GetDashboardStats(c *gin.Context) {
 	stats, err := h.Service.GetDashboardStats()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get stats"})
+		logger.Log.Error().Err(err).Msg("Failed to get dashboard stats")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": stats})
@@ -39,7 +41,8 @@ func (h *AnalyticsHandler) GetDashboardStats(c *gin.Context) {
 func (h *AnalyticsHandler) GetSalesByCategory(c *gin.Context) {
 	data, err := h.Service.GetSalesByCategory()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})
+		logger.Log.Error().Err(err).Msg("Failed to get sales by category")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data})
@@ -58,7 +61,8 @@ func (h *AnalyticsHandler) GetTopProducts(c *gin.Context) {
 
 	data, err := h.Service.GetTopProducts(limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})
+		logger.Log.Error().Err(err).Msg("Failed to get top products")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data})
@@ -77,7 +81,8 @@ func (h *AnalyticsHandler) GetSalesByDay(c *gin.Context) {
 
 	data, err := h.Service.GetSalesByDay(days)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})
+		logger.Log.Error().Err(err).Msg("Failed to get sales by day")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data})
@@ -96,7 +101,8 @@ func (h *AnalyticsHandler) GetRecentOrders(c *gin.Context) {
 
 	data, err := h.Service.GetRecentOrders(limit)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get data"})
+		logger.Log.Error().Err(err).Msg("Failed to get recent orders")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"data": data})
