@@ -8,6 +8,7 @@ import (
 
 // AppConfig holds all application configuration loaded from environment variables
 type AppConfig struct {
+	DatabaseURL       string // Full connection string (e.g. from Render)
 	DBHost            string
 	DBPort            string
 	DBUser            string
@@ -25,6 +26,7 @@ type AppConfig struct {
 // It returns an error immediately if a required variable is missing.
 func LoadConfig() (*AppConfig, error) {
 	cfg := &AppConfig{
+		DatabaseURL:   os.Getenv("DATABASE_URL"),
 		DBHost:        os.Getenv("DB_HOST"),
 		DBPort:        os.Getenv("DB_PORT"),
 		DBUser:        os.Getenv("DB_USER"),
@@ -45,20 +47,23 @@ func LoadConfig() (*AppConfig, error) {
 	cfg.TokenHourLifespan = tokenLifespan
 
 	// Validate required fields
-	if cfg.DBHost == "" {
-		return nil, errors.New("DB_HOST is required")
-	}
-	if cfg.DBPort == "" {
-		return nil, errors.New("DB_PORT is required")
-	}
-	if cfg.DBUser == "" {
-		return nil, errors.New("DB_USER is required")
-	}
-	if cfg.DBPassword == "" {
-		return nil, errors.New("DB_PASSWORD is required")
-	}
-	if cfg.DBName == "" {
-		return nil, errors.New("DB_NAME is required")
+	// If DATABASE_URL is set, skip individual DB field validation
+	if cfg.DatabaseURL == "" {
+		if cfg.DBHost == "" {
+			return nil, errors.New("DB_HOST is required (or set DATABASE_URL)")
+		}
+		if cfg.DBPort == "" {
+			return nil, errors.New("DB_PORT is required (or set DATABASE_URL)")
+		}
+		if cfg.DBUser == "" {
+			return nil, errors.New("DB_USER is required (or set DATABASE_URL)")
+		}
+		if cfg.DBPassword == "" {
+			return nil, errors.New("DB_PASSWORD is required (or set DATABASE_URL)")
+		}
+		if cfg.DBName == "" {
+			return nil, errors.New("DB_NAME is required (or set DATABASE_URL)")
+		}
 	}
 	if cfg.APISecret == "" {
 		return nil, errors.New("API_SECRET is required")
