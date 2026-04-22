@@ -40,4 +40,3 @@ func ConnectDatabase(cfg *AppConfig) (*gorm.DB, error) {
 	DB = database
 	return database, nil
 }
-
